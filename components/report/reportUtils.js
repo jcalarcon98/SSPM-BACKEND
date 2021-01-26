@@ -3,30 +3,26 @@ const fs = require("fs");
 const path = require("path");
 const util = require("util");
 const process = require('process');
+const { parse } = require("path");
 
 const { Document, Packer, Paragraph, Table, TableCell, TableRow,  Media, AlignmentType, VerticalAlign, TextRun} = docx;
 
 async function generateDocument({ period }) {
   
-  const { stage, questions, alternatives, evaluationGrades: grades} = period;
+  const { degree, initDate, endDate, stage, questions, alternatives, evaluationGrades: grades} = period;
+
   const children = [];
 
   grades.forEach(({ syllabuses, parallel, number}) => {
 
-    const text = `${getGradeNameByNumber(number)} Ciclo "${parallel}"`;
-
-    const paragraph = new Paragraph({
-      children: [new TextRun({
-        text,
-        bold: true,
-        size: 30
-      })],
-      alignment: AlignmentType.LEFT
-    });
-
+    const paragraph = generateTitleCicle(number, parallel);
     const tableGrade = generateTable(syllabuses, parallel, number, alternatives, stage, questions);
+
     children.push(paragraph, tableGrade);
   });
+  
+  const pathInformation = getRandomDocumentName(degree, stage, initDate, endDate);
+  const { documentName, folder } = pathInformation;
   
   const document = new Document();
 
@@ -35,9 +31,25 @@ async function generateDocument({ period }) {
   });
 
   const buffer = await Packer.toBuffer(document);
-  fs.writeFileSync("document.docx", buffer);
-  // const documentPath =  path.join(process.cwd() + '/document.docx');
-  return 'document.docx';
+  const pathToSave =  `reports/${folder}/${documentName}`;
+
+  fs.writeFileSync(pathToSave, buffer);
+  return pathInformation;
+}
+
+function generateTitleCicle(number, parallel) {
+  const text = `${getGradeNameByNumber(number)} Ciclo "${parallel}"`;
+  
+  const paragraph = new Paragraph({
+    children: [new TextRun({
+      text,
+      bold: true,
+      size: 30
+    })],
+    alignment: AlignmentType.LEFT
+  });
+
+  return paragraph;
 }
 
 function generateTable(syllabuses, parallel, number, alternatives, stage, questions) {
@@ -255,6 +267,11 @@ function generateIndicatorsRow(row){
 
   return generateTableRow(indicatorRow);
 }
+
+function generateFinalRows(){
+
+  
+} 
 /**
  * childrenArray : { content, rowSpan, columnSpan}
  * @param {*} childrenArray 
@@ -322,6 +339,26 @@ function getGradeNameByNumber(number) {
   }
 }
 
+function getRandomDocumentName( degree, stage, initDate, endDate ){
+  
+  const randomNumber = new Date().getMilliseconds();
+  const currentStage = getStage(stage);
+  const basePath = `${process.cwd()}/reports`;
+
+  const degreePath = `${basePath}/${degree}`;
+
+  if (!fs.existsSync(degreePath)){
+    fs.mkdirSync(degreePath);
+  }
+  
+  const documentName = `report-${currentStage}-${initDate}-${randomNumber}.docx`;
+
+  return {
+    documentName,
+    folder: degree
+  }
+
+}
 module.exports = {
   generateDocument
 }

@@ -4,6 +4,6 @@ const reportController = require('./reportController');
 
 app.post('/', reportController.generateReport);
 
-app.get('/download', reportController.downloadReport);
+app.get('/download/:folder/:documentName', reportController.downloadReport);
 
 module.exports = app;

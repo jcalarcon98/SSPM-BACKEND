@@ -2,28 +2,28 @@
 const { generateDocument } = require('./reportUtils');
 const path = require("path");
 const process = require('process');
+const util = require("util");
+const { request } = require('./reportRoute');
 
 exports.generateReport = async(req, res) => {
 
   const data = req.body;
-
+  console.log(util.inspect(data, false, null, true /* enable colors */))
   const documentPath = await generateDocument(data);
-
-  res.json({
-    name: documentPath
-  });
-
-
-  // res.download(documentPath);
-
-  // res.download(path.join(__dirname + '/document.docx'));
-  // res.send(documentPath);
+  
+  res.json(documentPath);
 };
 
 exports.downloadReport = (req, res) => {
-
-  const documentPath =  path.join(process.cwd() + '/document.docx');
+  ;
+  const { folder, documentName } = req.params;
+  
+  if( !folder || !documentName) {
+    res.status(400).send({
+      message: 'Folder and Document name are required'
+    });
+  }
+  
+  const documentPath =  `${process.cwd()}/reports/${folder}/${documentName}`;
   res.download(documentPath);
-  // const file = `${__dirname}/upload-folder/dramaticpenguin.MOV`;
-    // res.download(file); // Set disposition and send it.
 };

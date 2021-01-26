@@ -9,7 +9,7 @@ require('./config/config');
 
 app.use(bodyParser.json());
 
-app.use('/api/doc', reportRoutes);
+app.use('/api/docx', reportRoutes);
 
 app.listen(process.env.PORT, () => {
   console.log(`We are running node in port: ${process.env.PORT}`);
