@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const util = require("util");
 
-const { Document, Packer, Paragraph, Table, TableCell, TableRow,  Media, AlignmentType, HeadingLevel, TextRun} = docx;
+const { Document, Packer, Paragraph, Table, TableCell, TableRow,  Media, AlignmentType, VerticalAlign, TextRun} = docx;
 
 async function generateDocument({ period }) {
   
@@ -19,7 +19,8 @@ async function generateDocument({ period }) {
         text,
         bold: true,
         size: 30
-      })]
+      })],
+      alignment: AlignmentType.LEFT
     });
 
     const tableGrade = generateTable(syllabuses, parallel, number, alternative, stage);
@@ -44,10 +45,11 @@ async function generateDocument({ period }) {
 function generateTable(syllabuses, parallel, number, alternatives, stage) {
 
   const alternativesSize = alternatives.length;
+  const syllabusesSize = syllabuses.length;
   /**
    * To understand this -> verify Table header. 
    * Alternatives repeat two times (*2)
-   * Each grade syllabus
+   * Each grade syllabus takes a space.
    * 1 => First column title (Séptimo, Octavo ciclo);
    */
   const tableRows = [];
@@ -55,8 +57,9 @@ function generateTable(syllabuses, parallel, number, alternatives, stage) {
   const tableHeader = generateTableHeader(stage, tableHeaderColumnSpan);
   const syllabusRow = generateSyllabusRow(number, syllabuses, alternativesSize);
   const teachersRow=  generateTeachersRow(syllabuses, alternatives);
+  const titleQuestionRow = generateTitleQuestionRow(parallel, syllabusesSize, alternativesSize);
 
-  tableRows.push(tableHeader, syllabusRow, teachersRow);
+  tableRows.push(tableHeader, syllabusRow, teachersRow, titleQuestionRow);
 
   const table = new Table({
     rows: tableRows
@@ -69,13 +72,23 @@ function generateTableHeader (stage, columnSpan){
   
   const headerTitle =  `APLICACIÓN A ${ getStage(stage) } DEL PERÍODO ACADÉMICO`;
 
+  const cellChild = [
+    new Paragraph({
+      children: [new TextRun({
+        text: headerTitle,
+        bold: true          
+      })],
+      alignment: AlignmentType.CENTER,
+    }),
+  ];
+
   const tableHeader = new TableRow({
     children: [
       new TableCell({
-        children: [new Paragraph(headerTitle)],
+        children: cellChild,
         columnSpan
-      })
-    ]
+      }),
+    ],
   });
 
   return tableHeader;
@@ -136,33 +149,70 @@ function generateTeachersRow(syllabuses, alternatives){
   return generateTableRow(teacherHeader);
 }
 
+function generateTitleQuestionRow(parallel, syllabusesSize, alternativesSize) {
+
+  const indicatorsTitle = "INDICADORES DE DESARROLLO DEL SÍLABO";
+  const currentParallel = `PARALELO ${parallel}`;
+
+  const contentArray = [
+    {
+      content: indicatorsTitle
+    },
+    {
+      content: currentParallel,
+      columnSpan: syllabusesSize
+    }
+  ];
+
+  /**
+   * Only to fill with empty data to set table format
+   */
+  for (let index = 0; index < alternativesSize * 2; index++) {
+    contentArray.push({
+      content: ''
+    });
+  }
+  
+  return generateTableRow(contentArray);
+
+}
 /**
  * childrenArray : { content, rowSpan, columnSpan}
  * @param {*} childrenArray 
  */
 function generateTableRow( childrenArray ){
   
-  const children = [];
+  const generatedChildren = [];
 
   childrenArray.forEach(child => {
     
+    const cellChild = [
+      new Paragraph({
+        children: [new TextRun({
+          text: child.content,
+          bold: true          
+        })],
+        alignment: AlignmentType.CENTER,
+      }),
+    ];
+
     const currentTableCell = new TableCell({
-      children: [new Paragraph(child.content)],
+      children: cellChild,
       rowSpan: child.rowSpan ? child.rowSpan : 1,
-      columnSpan: child.columnSpan ? child.columnSpan: 1
+      columnSpan: child.columnSpan ? child.columnSpan: 1,
+      verticalAlign: VerticalAlign.CENTER
     })
 
-    children.push(currentTableCell);
+    generatedChildren.push(currentTableCell);
 
   });
 
   const tableRow = new TableRow({
-    children
+    children: generatedChildren
   });
 
   return tableRow;
 }
-
 
 function getStage( stage ) {
 
