@@ -2,12 +2,13 @@ const docx = require("docx");
 const fs = require("fs");
 const path = require("path");
 const util = require("util");
+const process = require('process');
 
 const { Document, Packer, Paragraph, Table, TableCell, TableRow,  Media, AlignmentType, VerticalAlign, TextRun} = docx;
 
 async function generateDocument({ period }) {
   
-  const { stage, questions, alternative, evaluationGrades: grades} = period;
+  const { stage, questions, alternatives, evaluationGrades: grades} = period;
   const children = [];
 
   grades.forEach(({ syllabuses, parallel, number}) => {
@@ -23,8 +24,7 @@ async function generateDocument({ period }) {
       alignment: AlignmentType.LEFT
     });
 
-    const tableGrade = generateTable(syllabuses, parallel, number, alternative, stage);
-    
+    const tableGrade = generateTable(syllabuses, parallel, number, alternatives, stage, questions);
     children.push(paragraph, tableGrade);
   });
   
@@ -34,15 +34,13 @@ async function generateDocument({ period }) {
     children
   });
 
-  const buffer =  await Packer.toBuffer(document);
+  const buffer = await Packer.toBuffer(document);
   fs.writeFileSync("document.docx", buffer);
-  //TODO: Fix path.
-  const documentPath =  path.join(__dirname + '/document.docx');
-
-  return documentPath;
+  // const documentPath =  path.join(process.cwd() + '/document.docx');
+  return 'document.docx';
 }
 
-function generateTable(syllabuses, parallel, number, alternatives, stage) {
+function generateTable(syllabuses, parallel, number, alternatives, stage, questions) {
 
   const alternativesSize = alternatives.length;
   const syllabusesSize = syllabuses.length;
@@ -56,11 +54,18 @@ function generateTable(syllabuses, parallel, number, alternatives, stage) {
   const tableHeaderColumnSpan = alternativesSize * 2 + syllabuses.length + 1;
   const tableHeader = generateTableHeader(stage, tableHeaderColumnSpan);
   const syllabusRow = generateSyllabusRow(number, syllabuses, alternativesSize);
-  const teachersRow=  generateTeachersRow(syllabuses, alternatives);
+  const teachersRow = generateTeachersRow(syllabuses, alternatives);
   const titleQuestionRow = generateTitleQuestionRow(parallel, syllabusesSize, alternativesSize);
-
+  
   tableRows.push(tableHeader, syllabusRow, teachersRow, titleQuestionRow);
+  
+  const preparedData = prepareData(questions, syllabuses, alternatives, stage);
 
+  preparedData.forEach(indicatorRow => {
+    const currentIndicatorRow = generateIndicatorsRow(indicatorRow);
+    tableRows.push(currentIndicatorRow);
+  });
+  
   const table = new Table({
     rows: tableRows
   });    
@@ -175,6 +180,80 @@ function generateTitleQuestionRow(parallel, syllabusesSize, alternativesSize) {
   
   return generateTableRow(contentArray);
 
+}
+
+function prepareData(questions, syllabuses, alternatives, stage) {
+
+  sheetNumber = getStage(stage)  === "MITAD" ? 0 : 1; 
+
+  const allRows = [];
+  let currentRow = [];
+
+  const counterAlternatives = [];
+
+  alternatives.forEach( alternative => {
+    delete alternative.persistenceVersion;
+    alternative.counter = 0;
+    counterAlternatives.push(alternative);
+  });
+
+  questions.forEach( ({ persistenceId, description }, index) => {
+
+    currentRow.push( `${index + 1}. ${description}`);
+
+    syllabuses.forEach(({ sheets }) => {
+      
+      const currentSheet = sheets[sheetNumber];
+      // TODO: Here we can refactor code to break for if persistenceId === question
+      currentSheet.answers.forEach(({question, alternative}) => {
+
+        const questionId = parseInt(question);
+
+        if( persistenceId === questionId ){
+
+          counterAlternatives.forEach(counterAlternative => {
+
+            const alternativeId = parseInt(alternative);
+
+            if(counterAlternative.persistenceId === alternativeId){
+
+              currentRow.push(counterAlternative.description);
+              counterAlternative.counter += 1;
+            }
+          });
+        }
+      });
+    });
+
+    counterAlternatives.forEach( ({counter}) => {
+      currentRow.push(counter.toString());
+    });
+
+    counterAlternatives.forEach( counterAlternative => {
+      const counter = counterAlternative.counter;
+      const percentage = ((counter * 100)/syllabuses.length).toFixed(2); 
+      currentRow.push(`${percentage}%`);
+      counterAlternative.counter = 0;
+    });
+
+    allRows.push(currentRow);
+    currentRow = [];
+  });
+
+  return allRows;
+}
+
+function generateIndicatorsRow(row){
+
+  const indicatorRow = [];
+
+  row.forEach(item => {
+    indicatorRow.push({
+      content: item 
+    });
+  })
+
+  return generateTableRow(indicatorRow);
 }
 /**
  * childrenArray : { content, rowSpan, columnSpan}
