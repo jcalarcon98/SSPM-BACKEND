@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const util = require("util");
 const process = require('process');
-const { generateSyllabusGraph } = require("../graphs/graphsUtils");
+const { generateSyllabusGraph, generateIndicatorsGraph } = require("../graphs/graphsUtils");
 
 const { Document, Packer, Paragraph, Table, TableCell, TableRow,  Media, AlignmentType, VerticalAlign, TextRun} = docx;
 
@@ -18,21 +18,34 @@ async function generateDocument({ period }) {
   grades.forEach(({ syllabuses, parallel, number}) => {
 
     const text = `${getGradeNameByNumber(number)} Ciclo "${parallel}"`;
-    const paragraph = generateTitle( text, number, parallel, 30, 0);
+    const paragraph = generateTitle( text, 30, 0);
     const tableGrade = generateTable(syllabuses, parallel, number, alternatives, stage, questions);
+    const currentGrade =  `${getGradeNameByNumber(number)} "${parallel}"`;
 
+    // Generate syllabus Graph;
     const { syllabusesRateCounter } = prepareFinalRows(stage, syllabuses, alternatives, questions.length);
     const titleSyllabusGraph = 'Resumen de cumplimiento por Asignatura a mitad de periodo';
-    const currentGrade =  `${getGradeNameByNumber(number)} "${parallel}"`;
     const pathSyllabusGraph = generateSyllabusGraph(titleSyllabusGraph, currentGrade, syllabusesRateCounter, alternatives, questions.length);
     const syllabusGraph = Media.addImage(document, fs.readFileSync(`${process.cwd()}/${pathSyllabusGraph}`), 630, 400);
-    
+  
     const syllabusGraphParagraph = new Paragraph({
       children: [syllabusGraph],
       alignment: AlignmentType.CENTER
-    })
+    });
 
-    children.push(paragraph, tableGrade, syllabusGraphParagraph);
+    // Generate IndicatorsGraph
+    // TODO: check current stage and customize titleGraph
+    const titleIndicatorsGraph = 'Resumen de cumplimiento por Indicador a mitad de periodo';
+    const { indicatorsGraphData } = prepareIndicatorsData(questions, syllabuses, alternatives, stage);
+    const pathIndicatorsGraph = generateIndicatorsGraph(titleIndicatorsGraph, currentGrade, indicatorsGraphData, alternatives);
+    const indicatorsGraph = Media.addImage(document, fs.readFileSync(`${process.cwd()}/${pathIndicatorsGraph}`), 630, 400);
+
+    const indicatorsGraphParagraph = new Paragraph({
+      children: [indicatorsGraph],
+      alignment: AlignmentType.CENTER
+    });
+
+    children.push(paragraph, tableGrade, syllabusGraphParagraph, indicatorsGraphParagraph);
   });
   
   const pathInformation = getRandomDocumentName(degree, stage, initDate, endDate);
@@ -49,7 +62,7 @@ async function generateDocument({ period }) {
   return pathInformation;
 }
 
-function generateTitle(text, number, parallel, fontSize, alignment) {
+function generateTitle(text, fontSize, alignment) {
 
   const currentAlignment = alignment === 0 ?  AlignmentType.LEFT : AlignmentType.CENTER;
 
@@ -85,9 +98,9 @@ function generateTable(syllabuses, parallel, number, alternatives, stage, questi
   
   tableRows.push(tableHeader, syllabusRow, teachersRow, titleQuestionRow);
   
-  const preparedIndicatorsData = prepareIndicatorsData(questions, syllabuses, alternatives, stage);
+  const { allRows } = prepareIndicatorsData(questions, syllabuses, alternatives, stage);
 
-  preparedIndicatorsData.forEach(indicatorRow => {
+  allRows.forEach(indicatorRow => {
     const currentIndicatorRow = generateSimpleRow(indicatorRow);
     tableRows.push(currentIndicatorRow);
   });
@@ -226,6 +239,9 @@ function prepareIndicatorsData(questions, syllabuses, alternatives, stage) {
   const allRows = [];
   let currentRow = [];
 
+  const indicatorsGraphData = [];
+  let currentIndicatorGraphData = [];
+
   const counterAlternatives = [];
 
   alternatives.forEach( alternative => {
@@ -236,7 +252,10 @@ function prepareIndicatorsData(questions, syllabuses, alternatives, stage) {
 
   questions.forEach( ({ persistenceId, description }, index) => {
 
-    currentRow.push( `${index + 1}. ${description}`);
+    const currentIndicator = `${index + 1}. ${description}`;
+
+    currentRow.push(currentIndicator);
+    currentIndicatorGraphData.push(currentIndicator);
 
     syllabuses.forEach(({ sheets }) => {
       
@@ -268,16 +287,26 @@ function prepareIndicatorsData(questions, syllabuses, alternatives, stage) {
 
     counterAlternatives.forEach( counterAlternative => {
       const counter = counterAlternative.counter;
-      const percentage = ((counter * 100)/syllabuses.length).toFixed(2); 
-      currentRow.push(`${percentage}%`);
+      const percentageIndicator = (counter * 100)/syllabuses.length;
+      
+      currentRow.push(`${percentageIndicator.toFixed(2)}%`);
+      
+      currentIndicatorGraphData.push(percentageIndicator);
+      
       counterAlternative.counter = 0;
     });
+
+    indicatorsGraphData.push(currentIndicatorGraphData);
+    currentIndicatorGraphData = [];
 
     allRows.push(currentRow);
     currentRow = [];
   });
 
-  return allRows;
+  return {
+    allRows,
+    indicatorsGraphData
+  }
 }
 
 function generateSimpleRow(row){
