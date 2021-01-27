@@ -8,7 +8,6 @@ const { request } = require('./reportRoute');
 exports.generateReport = async(req, res) => {
 
   const data = req.body;
-  console.log(util.inspect(data, false, null, true /* enable colors */))
   const documentPath = await generateDocument(data);
   
   res.json(documentPath);

@@ -3,7 +3,6 @@ const fs = require("fs");
 const path = require("path");
 const util = require("util");
 const process = require('process');
-const { parse } = require("path");
 
 const { Document, Packer, Paragraph, Table, TableCell, TableRow,  Media, AlignmentType, VerticalAlign, TextRun} = docx;
 
@@ -56,6 +55,7 @@ function generateTable(syllabuses, parallel, number, alternatives, stage, questi
 
   const alternativesSize = alternatives.length;
   const syllabusesSize = syllabuses.length;
+  const questionsSize = questions.length;
   /**
    * To understand this -> verify Table header. 
    * Alternatives repeat two times (*2)
@@ -71,13 +71,24 @@ function generateTable(syllabuses, parallel, number, alternatives, stage, questi
   
   tableRows.push(tableHeader, syllabusRow, teachersRow, titleQuestionRow);
   
-  const preparedData = prepareData(questions, syllabuses, alternatives, stage);
+  const preparedIndicatorsData = prepareIndicatorsData(questions, syllabuses, alternatives, stage);
 
-  preparedData.forEach(indicatorRow => {
-    const currentIndicatorRow = generateIndicatorsRow(indicatorRow);
+  preparedIndicatorsData.forEach(indicatorRow => {
+    const currentIndicatorRow = generateSimpleRow(indicatorRow);
     tableRows.push(currentIndicatorRow);
   });
   
+  const {rowsContent, rowsContentPercentage} = prepareFinalRows(stage, syllabuses, alternatives, questionsSize);
+  rowsContent.forEach(finalRow => {
+    const currentFinalRow = generateSimpleRow(finalRow);
+    tableRows.push(currentFinalRow);
+  });
+
+  rowsContentPercentage.forEach(finalRowPercentage =>{
+    const currentFinalRowPercentage = generateSimpleRow(finalRowPercentage);
+    tableRows.push(currentFinalRowPercentage);
+  });
+
   const table = new Table({
     rows: tableRows
   });    
@@ -194,7 +205,7 @@ function generateTitleQuestionRow(parallel, syllabusesSize, alternativesSize) {
 
 }
 
-function prepareData(questions, syllabuses, alternatives, stage) {
+function prepareIndicatorsData(questions, syllabuses, alternatives, stage) {
 
   sheetNumber = getStage(stage)  === "MITAD" ? 0 : 1; 
 
@@ -255,7 +266,7 @@ function prepareData(questions, syllabuses, alternatives, stage) {
   return allRows;
 }
 
-function generateIndicatorsRow(row){
+function generateSimpleRow(row){
 
   const indicatorRow = [];
 
@@ -268,10 +279,70 @@ function generateIndicatorsRow(row){
   return generateTableRow(indicatorRow);
 }
 
-function generateFinalRows(){
+function prepareFinalRows(stage, syllabuses, alternatives, questionsSize){
 
+  sheetNumber = getStage(stage)  === "MITAD" ? 0 : 1; 
+
+  const syllabusesRateCounter = [];
   
+  syllabuses.forEach(({ sheets, denomination }, index) => {
+    
+    const currentSyllabus = [];
+
+    alternatives.forEach( ({ description, persistenceId }) => {
+      currentSyllabus.push({
+        counter: 0,
+        alternative: description,
+        alternativeId: persistenceId,
+        denomination: denomination 
+      });
+    });
+
+    syllabusesRateCounter.push(currentSyllabus);
+
+    const currentSheet = sheets[sheetNumber];
+    
+    currentSheet.answers.forEach( ({ alternative }) => {
+      
+      const currentAlternativeId = parseInt(alternative);
+      
+      syllabusesRateCounter[index].forEach(currentSyllabus => {
+
+          if(currentAlternativeId === currentSyllabus.alternativeId){
+            currentSyllabus.counter +=1;
+          }
+      });
+    });
+  });
+
+  const rowsContent = [];
+  let currentRowContent = [];
+
+  const rowsContentPercentage = [];
+  let currentRowContentPercentage = [];
+
+  alternatives.forEach(({ description }, index) => {
+
+    currentRowContent.push(description);
+    currentRowContentPercentage.push(description);
+
+    syllabusesRateCounter.forEach(currentSyllabus => {
+      
+      const currentCounter = currentSyllabus[index].counter;
+      currentRowContent.push(currentCounter.toString());
+      const counterPercentage = ((currentCounter * 100)/questionsSize).toFixed(2);
+      currentRowContentPercentage.push(`${counterPercentage}%`);
+    });
+
+    rowsContent.push(currentRowContent);
+    rowsContentPercentage.push(currentRowContentPercentage);
+    currentRowContent = [];
+    currentRowContentPercentage = [];
+  });
+  
+  return { rowsContent, rowsContentPercentage };
 } 
+
 /**
  * childrenArray : { content, rowSpan, columnSpan}
  * @param {*} childrenArray 
