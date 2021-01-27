@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const util = require("util");
 const process = require('process');
+const { generateSyllabusGraph } = require("../graphs/graphsUtils");
 
 const { Document, Packer, Paragraph, Table, TableCell, TableRow,  Media, AlignmentType, VerticalAlign, TextRun} = docx;
 
@@ -12,19 +13,31 @@ async function generateDocument({ period }) {
 
   const children = [];
 
+  const document = new Document();
+
   grades.forEach(({ syllabuses, parallel, number}) => {
 
-    const paragraph = generateTitleCicle(number, parallel);
+    const text = `${getGradeNameByNumber(number)} Ciclo "${parallel}"`;
+    const paragraph = generateTitle( text, number, parallel, 30, 0);
     const tableGrade = generateTable(syllabuses, parallel, number, alternatives, stage, questions);
 
-    children.push(paragraph, tableGrade);
+    const { syllabusesRateCounter } = prepareFinalRows(stage, syllabuses, alternatives, questions.length);
+    const titleSyllabusGraph = 'Resumen de cumplimiento por Asignatura a mitad de periodo';
+    const currentGrade =  `${getGradeNameByNumber(number)} "${parallel}"`;
+    const pathSyllabusGraph = generateSyllabusGraph(titleSyllabusGraph, currentGrade, syllabusesRateCounter, alternatives, questions.length);
+    const syllabusGraph = Media.addImage(document, fs.readFileSync(`${process.cwd()}/${pathSyllabusGraph}`), 630, 400);
+    
+    const syllabusGraphParagraph = new Paragraph({
+      children: [syllabusGraph],
+      alignment: AlignmentType.CENTER
+    })
+
+    children.push(paragraph, tableGrade, syllabusGraphParagraph);
   });
   
   const pathInformation = getRandomDocumentName(degree, stage, initDate, endDate);
   const { documentName, folder } = pathInformation;
   
-  const document = new Document();
-
   document.addSection({
     children
   });
@@ -36,16 +49,17 @@ async function generateDocument({ period }) {
   return pathInformation;
 }
 
-function generateTitleCicle(number, parallel) {
-  const text = `${getGradeNameByNumber(number)} Ciclo "${parallel}"`;
-  
+function generateTitle(text, number, parallel, fontSize, alignment) {
+
+  const currentAlignment = alignment === 0 ?  AlignmentType.LEFT : AlignmentType.CENTER;
+
   const paragraph = new Paragraph({
     children: [new TextRun({
       text,
       bold: true,
-      size: 30
+      size: fontSize
     })],
-    alignment: AlignmentType.LEFT
+    alignment: currentAlignment
   });
 
   return paragraph;
@@ -340,9 +354,8 @@ function prepareFinalRows(stage, syllabuses, alternatives, questionsSize){
     currentRowContentPercentage = [];
   });
   
-  return { rowsContent, rowsContentPercentage };
+  return { syllabusesRateCounter, rowsContent, rowsContentPercentage };
 } 
-
 /**
  * childrenArray : { content, rowSpan, columnSpan}
  * @param {*} childrenArray 
