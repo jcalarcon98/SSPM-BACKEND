@@ -15,7 +15,9 @@ async function generateDocument({ period }) {
 
   const document = new Document();
 
-  grades.forEach(({ syllabuses, parallel, number}) => {
+  for (const grade of grades) {
+
+    const { syllabuses, parallel, number} = grade;
 
     const text = `${getGradeNameByNumber(number)} Ciclo "${parallel}"`;
     const paragraph = generateTitle( text, 30, 0);
@@ -25,7 +27,7 @@ async function generateDocument({ period }) {
     // Generate syllabus Graph;
     const { syllabusesRateCounter } = prepareFinalRows(stage, syllabuses, alternatives, questions.length);
     const titleSyllabusGraph = 'Resumen de cumplimiento por Asignatura a mitad de periodo';
-    const pathSyllabusGraph = generateSyllabusGraph(titleSyllabusGraph, currentGrade, syllabusesRateCounter, alternatives, questions.length);
+    const pathSyllabusGraph = await generateSyllabusGraph(titleSyllabusGraph, currentGrade, syllabusesRateCounter, alternatives, questions.length);
     const syllabusGraph = Media.addImage(document, fs.readFileSync(`${process.cwd()}/${pathSyllabusGraph}`), 630, 400);
   
     const syllabusGraphParagraph = new Paragraph({
@@ -36,8 +38,8 @@ async function generateDocument({ period }) {
     // Generate IndicatorsGraph
     // TODO: check current stage and customize titleGraph
     const titleIndicatorsGraph = 'Resumen de cumplimiento por Indicador a mitad de periodo';
-    const { indicatorsGraphData } = prepareIndicatorsData(questions, syllabuses, alternatives, stage);
-    const pathIndicatorsGraph = generateIndicatorsGraph(titleIndicatorsGraph, currentGrade, indicatorsGraphData, alternatives);
+    const { indicatorsGraphData } =  prepareIndicatorsData(questions, syllabuses, alternatives, stage);
+    const pathIndicatorsGraph = await generateIndicatorsGraph(titleIndicatorsGraph, currentGrade, indicatorsGraphData, alternatives);
     const indicatorsGraph = Media.addImage(document, fs.readFileSync(`${process.cwd()}/${pathIndicatorsGraph}`), 630, 400);
 
     const indicatorsGraphParagraph = new Paragraph({
@@ -46,7 +48,8 @@ async function generateDocument({ period }) {
     });
 
     children.push(paragraph, tableGrade, syllabusGraphParagraph, indicatorsGraphParagraph);
-  });
+
+  }
   
   const pathInformation = getRandomDocumentName(degree, stage, initDate, endDate);
   const { documentName, folder } = pathInformation;

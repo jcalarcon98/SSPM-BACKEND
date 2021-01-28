@@ -39,7 +39,7 @@ function prepareSyllabusGraphData(syllabuses, alternatives, questionsSize) {
   };
 }
 
-function generateSyllabusGraph(
+async function generateSyllabusGraph(
   titleGraph,
   grade,
   syllabuses,
@@ -94,12 +94,12 @@ function generateSyllabusGraph(
     .setHeight(400)
     .setBackgroundColor("white");
 
-  myChart.toFile("myChart.png");
+  await myChart.toFile("myChart.png");
 
   return "myChart.png";
 }
 
-function generateIndicatorsGraph(titleGraph, grade, indicatorsData, alternatives) {
+async function generateIndicatorsGraph(titleGraph, grade, indicatorsData, alternatives) {
   
   const { labels, datasets } = prepareIndicatorsGraphData(indicatorsData, alternatives);
 
@@ -146,7 +146,7 @@ function generateIndicatorsGraph(titleGraph, grade, indicatorsData, alternatives
     .setHeight(400)
     .setBackgroundColor("white");
 
-  myChart.toFile("myIndicatorsChart.png");
+  await myChart.toFile("myIndicatorsChart.png");
 
   return "myIndicatorsChart.png";
 }
