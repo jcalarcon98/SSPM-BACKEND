@@ -1,7 +1,5 @@
 const docx = require("docx");
 const fs = require("fs");
-const path = require("path");
-const util = require("util");
 const process = require('process');
 const { generateSyllabusGraph, generateIndicatorsGraph } = require("../graphs/graphsUtils");
 
@@ -264,21 +262,24 @@ function prepareIndicatorsData(questions, syllabuses, alternatives, stage) {
       const currentSheet = sheets[sheetNumber];
       // TODO: Here we can refactor code to break for if persistenceId === question
       currentSheet.answers.forEach(({question, alternative}) => {
+      // Verify if the question doesn't have percentage
+        if(question !== "percentage"){
 
-        const questionId = parseInt(question);
+          const questionId = parseInt(question);
 
-        if( persistenceId === questionId ){
+          if( persistenceId === questionId ){
 
-          counterAlternatives.forEach(counterAlternative => {
+            counterAlternatives.forEach(counterAlternative => {
 
-            const alternativeId = parseInt(alternative);
+              const alternativeId = parseInt(alternative);
 
-            if(counterAlternative.persistenceId === alternativeId){
+              if(counterAlternative.persistenceId === alternativeId){
 
-              currentRow.push(counterAlternative.description);
-              counterAlternative.counter += 1;
-            }
-          });
+                currentRow.push(counterAlternative.description);
+                counterAlternative.counter += 1;
+              }
+            });
+          }
         }
       });
     });
@@ -347,16 +348,20 @@ function prepareFinalRows(stage, syllabuses, alternatives, questionsSize){
 
     const currentSheet = sheets[sheetNumber];
     
-    currentSheet.answers.forEach( ({ alternative }) => {
+    currentSheet.answers.forEach( ({ question, alternative }) => {
+      // Verify if the question doesn't have percentage
+      if (question !== "percentage"){
+
+        const currentAlternativeId = parseInt(alternative);
       
-      const currentAlternativeId = parseInt(alternative);
-      
-      syllabusesRateCounter[index].forEach(currentSyllabus => {
+        syllabusesRateCounter[index].forEach(currentSyllabus => {
 
           if(currentAlternativeId === currentSyllabus.alternativeId){
             currentSyllabus.counter +=1;
           }
-      });
+        });
+      
+      }
     });
   });
 

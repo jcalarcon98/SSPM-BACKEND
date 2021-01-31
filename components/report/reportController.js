@@ -1,9 +1,5 @@
-
 const { generateDocument } = require('./reportUtils');
-const path = require("path");
 const process = require('process');
-const util = require("util");
-const { request } = require('./reportRoute');
 
 exports.generateReport = async(req, res) => {
 
