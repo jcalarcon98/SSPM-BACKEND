@@ -1,5 +1,4 @@
-const QuickChart = require("quickchart-js");
-const util = require("util");
+const QuickChart = require('quickchart-js');
 
 function prepareSyllabusGraphData(syllabuses, alternatives, questionsSize) {
   const labels = [];
@@ -15,8 +14,7 @@ function prepareSyllabusGraphData(syllabuses, alternatives, questionsSize) {
   syllabuses.forEach((syllabus) => {
     const [{ denomination }] = syllabus;
 
-    const currentDenomination =
-      denomination.length > 20 ? denomination.split(" ") : denomination;
+    const currentDenomination = denomination.length > 20 ? denomination.split(' ') : denomination;
 
     labels.push(currentDenomination);
 
@@ -44,18 +42,18 @@ async function generateSyllabusGraph(
   grade,
   syllabuses,
   alternatives,
-  questionsSize
+  questionsSize,
 ) {
   const { labels, datasets } = prepareSyllabusGraphData(
     syllabuses,
     alternatives,
-    questionsSize
+    questionsSize,
   );
 
   const myChart = new QuickChart();
   myChart
     .setConfig({
-      type: "horizontalBar",
+      type: 'horizontalBar',
       data: {
         labels,
         datasets,
@@ -76,15 +74,15 @@ async function generateSyllabusGraph(
         },
         plugins: {
           datalabels: {
-            color: "black",
+            color: 'black',
             font: {
-              weight: "bold",
+              weight: 'bold',
             },
-            anchor: "bottom",
-            align: "end",
+            anchor: 'bottom',
+            align: 'end',
             formatter: (value) => {
-              if (value === 0.3) return (0).toFixed(2) + "%";
-              return value.toFixed(2) + "%";
+              if (value === 0.3) return `${(0).toFixed(2)}%`;
+              return `${value.toFixed(2)}%`;
             },
           },
         },
@@ -92,68 +90,36 @@ async function generateSyllabusGraph(
     })
     .setWidth(900)
     .setHeight(400)
-    .setBackgroundColor("white");
+    .setBackgroundColor('white');
 
-  await myChart.toFile("myChart.png");
+  await myChart.toFile('myChart.png');
 
-  return "myChart.png";
+  return 'myChart.png';
 }
 
-async function generateIndicatorsGraph(titleGraph, grade, indicatorsData, alternatives) {
-  
-  const { labels, datasets } = prepareIndicatorsGraphData(indicatorsData, alternatives);
+function transformIndicatorWords(word) {
+  const arrayWord = word.split(' ');
+  const rows = [];
+  let rowArray = [];
 
-  const myChart = new QuickChart();
+  if (arrayWord.length < 4) {
+    return word;
+  }
 
-  myChart
-    .setConfig({
-      type: "horizontalBar",
-      data: {
-        labels,
-        datasets,
-      },
-      options: {
-        title: {
-          display: true,
-          text: [titleGraph, grade],
-        },
-        scales: {
-          xAxes: [
-            {
-              ticks: {
-                beginAtZero: true,
-              },
-            },
-          ],
-        },
-        plugins: {
-          datalabels: {
-            color: "black",
-            font: {
-              weight: "bold",
-            },
-            anchor: "bottom",
-            align: "end",
-            formatter: (value) => {
-              if (value === 0.3) return (0).toFixed(2) + "%";
-              return value.toFixed(2) + "%";
-            },
-          },
-        },
-      },
-    })
-    .setWidth(900)
-    .setHeight(1300)
-    .setBackgroundColor("white");
+  for (let i = 0; i < arrayWord.length; i += 4) {
+    for (let j = i; j <= i + 3; j += 1) {
+      if (j < arrayWord.length) {
+        rowArray.push(arrayWord[j]);
+      }
+    }
+    rows.push(rowArray.join(' '));
+    rowArray = [];
+  }
 
-  await myChart.toFile("myIndicatorsChart.png");
-
-  return "myIndicatorsChart.png";
+  return rows;
 }
 
 function prepareIndicatorsGraphData(indicatorsData, alternatives) {
-  console.log(util.inspect(indicatorsData, false, null, true));
-
   const labels = [];
   const datasets = [];
 
@@ -164,49 +130,76 @@ function prepareIndicatorsGraphData(indicatorsData, alternatives) {
     });
   });
 
-  for (let index = 0; index < indicatorsData.length; index++) {
-
+  for (let index = 0; index < indicatorsData.length; index += 1) {
     const currentArray = indicatorsData[index];
     const indicatorTitle = currentArray[0];
 
     labels.push(transformIndicatorWords(indicatorTitle));
 
-    for (let currentIndexArray = 1; currentIndexArray < currentArray.length; currentIndexArray++) {
-      
+    const arrayLength = currentArray.length;
+
+    for (let currentIndexArray = 1; currentIndexArray < arrayLength; currentIndexArray += 1) {
       const currentValue = currentArray[currentIndexArray];
       const dataValue = currentValue === 0 ? 0.3 : currentValue;
-
       datasets[currentIndexArray - 1].data.push(dataValue);
     }
   }
 
   return {
     labels,
-    datasets
+    datasets,
   };
 }
 
-function transformIndicatorWords(word) {
+async function generateIndicatorsGraph(titleGraph, grade, indicatorsData, alternatives) {
+  const { labels, datasets } = prepareIndicatorsGraphData(indicatorsData, alternatives);
 
-  const arrayWord = word.split(" ");
-  const rows = [];
-  let rowArray = [];
+  const myChart = new QuickChart();
 
-  if (arrayWord.length < 4) {
-    return word;
-  }
-  
-  for (let i = 0; i < arrayWord.length; i += 4) {
-    for (let j = i; j <= i + 3; j++) {
-      if (j < arrayWord.length) {
-        rowArray.push(arrayWord[j]);
-      }
-    }
-    rows.push(rowArray.join(' '));
-    rowArray = [];
-  }
+  myChart
+    .setConfig({
+      type: 'horizontalBar',
+      data: {
+        labels,
+        datasets,
+      },
+      options: {
+        title: {
+          display: true,
+          text: [titleGraph, grade],
+        },
+        scales: {
+          xAxes: [
+            {
+              ticks: {
+                beginAtZero: true,
+              },
+            },
+          ],
+        },
+        plugins: {
+          datalabels: {
+            color: 'black',
+            font: {
+              weight: 'bold',
+            },
+            anchor: 'bottom',
+            align: 'end',
+            formatter: (value) => {
+              if (value === 0.3) return `${(0).toFixed(2)}%`;
+              return `${value.toFixed(2)}%`;
+            },
+          },
+        },
+      },
+    })
+    .setWidth(900)
+    .setHeight(1300)
+    .setBackgroundColor('white');
 
-  return rows;
+  await myChart.toFile('myIndicatorsChart.png');
+
+  return 'myIndicatorsChart.png';
 }
 
 module.exports = {

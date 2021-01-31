@@ -1,24 +1,21 @@
-const { generateDocument } = require('./reportUtils');
 const process = require('process');
+const { generateDocument } = require('./reportUtils');
 
-exports.generateReport = async(req, res) => {
-
+exports.generateReport = async (req, res) => {
   const data = req.body;
   const documentPath = await generateDocument(data);
-  
+
   res.json(documentPath);
 };
 
 exports.downloadReport = (req, res) => {
-  ;
   const { folder, documentName } = req.params;
-  
-  if( !folder || !documentName) {
+
+  if (!folder || !documentName) {
     res.status(400).send({
-      message: 'Folder and Document name are required'
+      message: 'Folder and Document name are required',
     });
   }
-  
-  const documentPath =  `${process.cwd()}/reports/${folder}/${documentName}`;
+  const documentPath = `${process.cwd()}/reports/${folder}/${documentName}`;
   res.download(documentPath);
 };
