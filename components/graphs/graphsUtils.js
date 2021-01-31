@@ -143,7 +143,7 @@ async function generateIndicatorsGraph(titleGraph, grade, indicatorsData, altern
       },
     })
     .setWidth(900)
-    .setHeight(400)
+    .setHeight(1300)
     .setBackgroundColor("white");
 
   await myChart.toFile("myIndicatorsChart.png");

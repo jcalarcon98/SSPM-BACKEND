@@ -18,7 +18,6 @@ async function generateDocument({ period }) {
   for (const grade of grades) {
 
     const { syllabuses, parallel, number} = grade;
-
     const text = `${getGradeNameByNumber(number)} Ciclo "${parallel}"`;
     const paragraph = generateTitle( text, 30, 0);
     const tableGrade = generateTable(syllabuses, parallel, number, alternatives, stage, questions);
@@ -40,7 +39,7 @@ async function generateDocument({ period }) {
     const titleIndicatorsGraph = 'Resumen de cumplimiento por Indicador a mitad de periodo';
     const { indicatorsGraphData } =  prepareIndicatorsData(questions, syllabuses, alternatives, stage);
     const pathIndicatorsGraph = await generateIndicatorsGraph(titleIndicatorsGraph, currentGrade, indicatorsGraphData, alternatives);
-    const indicatorsGraph = Media.addImage(document, fs.readFileSync(`${process.cwd()}/${pathIndicatorsGraph}`), 630, 400);
+    const indicatorsGraph = Media.addImage(document, fs.readFileSync(`${process.cwd()}/${pathIndicatorsGraph}`), 630, 800);
 
     const indicatorsGraphParagraph = new Paragraph({
       children: [indicatorsGraph],
@@ -209,7 +208,7 @@ function generateTeachersRow(syllabuses, alternatives){
 
 function generateTitleQuestionRow(parallel, syllabusesSize, alternativesSize) {
 
-  const indicatorsTitle = "INDICADORES DE DESARROLLO DEL SÍLABO";
+  const indicatorsTitle = "INDICADORES";
   const currentParallel = `PARALELO ${parallel}`;
 
   const contentArray = [
