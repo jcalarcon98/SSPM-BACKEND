@@ -1,7 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+
 const app = express();
-const reportRoutes = require('./components/report/reportRoute');
+const reportRoutes = require('./src/components/report/reportRoute');
 /**
  * Global configuration
  */
@@ -14,4 +15,3 @@ app.use('/api/docx', reportRoutes);
 app.listen(process.env.PORT, () => {
   console.log(`We are running node in port: ${process.env.PORT}`);
 });
-

@@ -1,3 +1,8 @@
+/**
+ * @file Manage all the configuration nedded to generate .docx file
+ * @author Jean Carlos Alarcón <jeancalarcon98@gmail.com>
+ * @author Edgar Andrés Soto <edgar.soto@unl.edu.ec>
+ */
 const docx = require('docx');
 const fs = require('fs');
 const process = require('process');
@@ -16,6 +21,14 @@ const {
   TextRun,
 } = docx;
 
+/**
+ * Generate grade name by entering a grade number.
+ * @example <caption> Usage of <b>getGradeNameByNumber()</b></caption>
+ * // returns 'Segundo'
+ * getGradeNameByNumber(2);
+ * @param  {number} number - Number of the grade, only numbers accepts [1..10].
+ * @returns {string} The name of the grade entered.
+ */
 function getGradeNameByNumber(number) {
   switch (number) {
     case 1: return 'Primer';
@@ -32,6 +45,13 @@ function getGradeNameByNumber(number) {
   }
 }
 
+/**
+ * Generate a paragraph, it will be used as initial title after table.
+ * @param  {string} text - The text that will be displayed
+ * @param  {number} fontSize - The size of the text
+ * @param  {number} alignment - Text alignment, if is 0 aligment will be LEFT else CENTER.
+ * @returns {Paragraph} Paragraph object, it is part of the .docx library.
+ */
 function generateTitle(text, fontSize, alignment) {
   const currentAlignment = alignment === 0 ? AlignmentType.LEFT : AlignmentType.CENTER;
 
@@ -47,7 +67,12 @@ function generateTitle(text, fontSize, alignment) {
   return paragraph;
 }
 
-function getStage(stage) {
+/**
+ * Returns the short denomination of the Stage.
+ * @param  {string} stage - The current stage (Mitad de ciclo || Final de ciclo).
+ * @returns {string} short denomination of the stage (MITAD || FINAL).
+ */
+function getShortDenominationStage(stage) {
   const stages = {
     middleStage: 'MITAD DE CICLO',
     middle: 'MITAD',
@@ -57,9 +82,17 @@ function getStage(stage) {
 
   return stage.toUpperCase() === stages.middleStage ? stages.middle : stages.end;
 }
-
+/**
+ * Generate the main row of the table.
+ * @param  {string} stage - The current stage (Mitad de ciclo || Final de ciclo).
+ * @param  {number} columnSpan - The number of the columns that the cell inside row will be expanded.
+ * @returns {TableRow} TableRow object, it is part of the .docx library
+ */
 function generateTableHeader(stage, columnSpan) {
-  const headerTitle = `APLICACIÓN A ${getStage(stage)} DEL PERÍODO ACADÉMICO`;
+
+  const shortStageDenomination = getShortDenominationStage(stage);
+
+  const headerTitle = `APLICACIÓN A ${shortStageDenomination} DEL PERÍODO ACADÉMICO`;
 
   const cellChild = [
     new Paragraph({
@@ -83,8 +116,12 @@ function generateTableHeader(stage, columnSpan) {
   return tableHeader;
 }
 /**
- * childrenArray : { content, rowSpan, columnSpan}
- * @param {*} childrenArray
+ * Generate a table row with multiple cells according childrenArray size
+ * @param  {Object[]} childrenArray - The cells that will be displayes inside the row.
+ * @param  {string} childrenArray[].content - The content cell.
+ * @param  {number} childrenArray[].rowSpan - The number of the rows that the cell inside row will be expanded.
+ * @param  {number} childrenArray[].columnSpan - The number of the columns that the cell inside row will be expanded.
+ * @returns  {TableRow} TableRow object with the same amount cell of the childrenArray elements, it is part of the .docx library
  */
 function generateTableRow(childrenArray) {
   const generatedChildren = [];
@@ -117,13 +154,22 @@ function generateTableRow(childrenArray) {
   return tableRow;
 }
 
-function generateSyllabusRow(number, syllabuses, alternativesSize) {
+/**
+ * Generate a table row with multiple cell with each syllabus denomination
+ * @param  {number} gradeNumber - The grade number
+ * @param  {Object[]} syllabuses - The syllabuses of the grade.
+ * @param  {number} syllabuses[0].denomination - The syllabus denomination.
+ * @param  {number} alternativesSize - The value that ITEMS and PERCENTAGE will be expanded in column.
+ * @returns {TableRow} TableRow object with cells according syllabuses size and three more aditional cell, it is part of the .docx library
+ */
+function generateSyllabusRow(gradeNumber = 0, syllabuses = [], alternativesSize = 0) {
   const syllabusHeader = [];
-  const currentCicle = `${getGradeNameByNumber(number)} Ciclo`;
+  const gradeName = getGradeNameByNumber(gradeNumber);
+  const currentCicle = `${gradeName} Ciclo`;
 
   syllabusHeader.push({
     content: currentCicle,
-    rowSpan: 2,
+    rowSpan: 2
   });
 
   syllabuses.forEach(({ denomination }) => {
@@ -193,7 +239,7 @@ function generateTitleQuestionRow(parallel, syllabusesSize, alternativesSize) {
 }
 
 function prepareIndicatorsData(questions, syllabuses, alternatives, stage) {
-  const sheetNumber = getStage(stage) === 'MITAD' ? 0 : 1;
+  const sheetNumber = getShortDenominationStage(stage) === 'MITAD' ? 0 : 1;
 
   const allRows = [];
   let currentRow = [];
@@ -277,7 +323,7 @@ function generateSimpleRow(row) {
 }
 
 function prepareFinalRows(stage, syllabuses, alternatives, questionsSize) {
-  const sheetNumber = getStage(stage) === 'MITAD' ? 0 : 1;
+  const sheetNumber = getShortDenominationStage(stage) === 'MITAD' ? 0 : 1;
 
   const syllabusesRateCounter = [];
 
@@ -387,7 +433,7 @@ function generateTable(syllabuses, parallel, number, alternatives, stage, questi
 
 function getRandomDocumentName(degree, stage, initDate) {
   const randomNumber = new Date().getMilliseconds();
-  const currentStage = getStage(stage);
+  const currentStage = getShortDenominationStage(stage);
   const basePath = `${process.cwd()}/reports`;
 
   const degreePath = `${basePath}/${degree}`;
@@ -419,16 +465,18 @@ async function generateDocument({ period }) {
   const document = new Document();
 
   for (const grade of grades) {
+    
     const {
       syllabuses,
       parallel,
       number,
     } = grade;
 
-    const text = `${getGradeNameByNumber(number)} Ciclo '${parallel}'`;
+    const gradeName = getGradeNameByNumber(number);
+    const text = `${gradeName} Ciclo '${parallel}'`;
     const paragraph = generateTitle(text, 30, 0);
     const tableGrade = generateTable(syllabuses, parallel, number, alternatives, stage, questions);
-    const currentGrade = `${getGradeNameByNumber(number)} '${parallel}'`;
+    const currentGrade = `${gradeName} '${parallel}'`;
 
     // Generate syllabus Graph;
     const { syllabusesRateCounter } = prepareFinalRows(
@@ -462,7 +510,7 @@ async function generateDocument({ period }) {
       alternatives,
       stage,
     );
-    
+
     const pathIndicatorsGraph = await generateIndicatorsGraph(
       titleIndicatorsGraph,
       currentGrade,
@@ -495,4 +543,9 @@ async function generateDocument({ period }) {
 
 module.exports = {
   generateDocument,
+  getGradeNameByNumber,
+  getShortDenominationStage,
+  generateTableHeader,
+  generateTableRow,
+  generateSyllabusRow
 };

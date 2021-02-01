@@ -11,8 +11,15 @@ module.exports = {
     ecmaVersion: 12,
   },
   rules: {
-    "no-param-reassign": false,
-    "no-restricted-syntax": false,
-    "no-await-in-loop": false
+    'no-param-reassign': 0,
+    'no-restricted-syntax': 0,
+    'no-await-in-loop': 0,
+    'jest/no-disabled-tests': 'warn',
+    'jest/no-focused-tests': 'error',
+    'jest/no-identical-title': 'error',
+    'jest/prefer-to-have-length': 'warn',
+    'jest/valid-expect': 'error',
   },
+  plugins: ['jest'],
+  extends: ['plugin:jest/recommended']
 };
