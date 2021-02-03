@@ -21,6 +21,7 @@ const {
   TextRun,
 } = docx;
 
+let verticalPercentage = 0;
 /**
  * Generate grade name by entering a grade number.
  * @example <caption> Usage of <b>getGradeNameByNumber()</b></caption>
@@ -119,8 +120,8 @@ function generateTableHeader(stage, columnSpan) {
  * Generate a table row with multiple cells according childrenArray size
  * @param  {Object[]} childrenArray - The cells that will be displayes inside the row.
  * @param  {string} childrenArray[].content - The content cell.
- * @param  {number} childrenArray[].rowSpan - The number of the rows that the cell inside row will be expanded.
- * @param  {number} childrenArray[].columnSpan - The number of the columns that the cell inside row will be expanded.
+ * @param  {number} childrenArray[].rowSpan? - The number of the rows that the cell inside row will be expanded.
+ * @param  {number} childrenArray[].columnSpan? - The number of the columns that the cell inside row will be expanded.
  * @returns  {TableRow} TableRow object with the same amount cell of the childrenArray elements, it is part of the .docx library
  */
 function generateTableRow(childrenArray) {
@@ -239,6 +240,10 @@ function generateTitleQuestionRow(parallel, syllabusesSize, alternativesSize) {
 }
 
 function prepareIndicatorsData(questions, syllabuses, alternatives, stage) {
+
+  let totalItemsPercentage = 0;
+  let areThereYesAlternative = false;
+
   const sheetNumber = getShortDenominationStage(stage) === 'MITAD' ? 0 : 1;
 
   const allRows = [];
@@ -265,7 +270,6 @@ function prepareIndicatorsData(questions, syllabuses, alternatives, stage) {
       const currentSheet = sheets[sheetNumber];
       // TODO: Here we can refactor code to break for if persistenceId === question
       currentSheet.answers.forEach(({ question, alternative }) => {
-      // Verify if the question doesn't have percentage
         if (question !== 'percentage') {
           const questionId = parseInt(question, 10);
 
@@ -288,8 +292,14 @@ function prepareIndicatorsData(questions, syllabuses, alternatives, stage) {
     });
 
     counterAlternatives.forEach((counterAlternative) => {
-      const { counter } = counterAlternative;
+    
+      const { counter, description } = counterAlternative;
       const percentageIndicator = (counter * 100) / syllabuses.length;
+
+      if (description.toUpperCase() === "SI") {
+        areThereYesAlternative = true;
+        totalItemsPercentage += percentageIndicator;
+      }
 
       currentRow.push(`${percentageIndicator.toFixed(2)}%`);
 
@@ -303,6 +313,11 @@ function prepareIndicatorsData(questions, syllabuses, alternatives, stage) {
     allRows.push(currentRow);
     currentRow = [];
   });
+
+  if(areThereYesAlternative){
+    totalItemsPercentage /= questions.length;
+    verticalPercentage = totalItemsPercentage;
+  }
 
   return {
     allRows,
@@ -323,6 +338,10 @@ function generateSimpleRow(row) {
 }
 
 function prepareFinalRows(stage, syllabuses, alternatives, questionsSize) {
+  
+  const defaultAlternatives = ["SI", "NO", "EN PARTE"];
+  let areTheDefaultAlternatives = true;
+
   const sheetNumber = getShortDenominationStage(stage) === 'MITAD' ? 0 : 1;
 
   const syllabusesRateCounter = [];
@@ -331,6 +350,11 @@ function prepareFinalRows(stage, syllabuses, alternatives, questionsSize) {
     const currentSyllabuses = [];
 
     alternatives.forEach(({ description, persistenceId }) => {
+
+      if(!defaultAlternatives.includes(description.toUpperCase())){
+        areTheDefaultAlternatives = false;
+      }
+
       currentSyllabuses.push({
         counter: 0,
         alternative: description,
@@ -363,16 +387,61 @@ function prepareFinalRows(stage, syllabuses, alternatives, questionsSize) {
   const rowsContentPercentage = [];
   let currentRowContentPercentage = [];
 
+  let totalPercentage = 0;
+
   alternatives.forEach(({ description }, index) => {
-    currentRowContent.push(description);
-    currentRowContentPercentage.push(description);
+    currentRowContent.push({content: description});
+    currentRowContentPercentage.push({content:description});
 
     syllabusesRateCounter.forEach((currentSyllabus) => {
       const currentCounter = currentSyllabus[index].counter;
-      currentRowContent.push(currentCounter.toString());
-      const counterPercentage = ((currentCounter * 100) / questionsSize).toFixed(2);
-      currentRowContentPercentage.push(`${counterPercentage}%`);
+      const currentPercentage = (currentCounter * 100) / questionsSize;
+      const counterPercentage = currentPercentage.toFixed(2);
+      
+      currentRowContent.push({content: currentCounter.toString()});
+      currentRowContentPercentage.push({content: `${counterPercentage}%`});
+      
+      if(description.toUpperCase() === 'SI'){
+        totalPercentage += currentPercentage;
+      }
     });
+
+    if(areTheDefaultAlternatives){
+      if(description.toUpperCase() === 'SI'){
+        totalPercentage /= syllabusesRateCounter.length;
+
+        currentRowContent.push({
+          content: 'TOTAL ITEMS',
+          rowSpan: 3,
+          columnSpan: 3
+        });
+
+        currentRowContent.push({
+          content: verticalPercentage,
+          columnSpan: 3
+        });
+        
+        currentRowContentPercentage.push({
+          content: 'PORCENTAJE TOTAL',
+          rowSpan: 3,
+          columnSpan: 3
+        });
+        
+        currentRowContentPercentage.push({
+          content: totalPercentage,
+          rowSpan: 3,
+          columnSpan: 3
+        });  
+      }
+
+      if(description.toUpperCase() === 'NO'){
+        currentRowContent.push({
+          content: 'TOTAL CUMPLIMIENTO',
+          rowSpan: 2,
+          columnSpan: 3
+        });
+      }
+    }
 
     rowsContent.push(currentRowContent);
     rowsContentPercentage.push(currentRowContentPercentage);
@@ -403,7 +472,7 @@ function generateTable(syllabuses, parallel, number, alternatives, stage, questi
   tableRows.push(tableHeader, syllabusRow, teachersRow, titleQuestionRow);
 
   const { allRows } = prepareIndicatorsData(questions, syllabuses, alternatives, stage);
-
+  
   allRows.forEach((indicatorRow) => {
     const currentIndicatorRow = generateSimpleRow(indicatorRow);
     tableRows.push(currentIndicatorRow);
@@ -414,13 +483,17 @@ function generateTable(syllabuses, parallel, number, alternatives, stage, questi
     rowsContentPercentage,
   } = prepareFinalRows(stage, syllabuses, alternatives, questionsSize);
 
+  console.log(rowsContent, 'Rows content');
+  console.log(rowsContentPercentage, 'Rows content percentage')
+
+
   rowsContent.forEach((finalRow) => {
-    const currentFinalRow = generateSimpleRow(finalRow);
+    const currentFinalRow = generateTableRow(finalRow);
     tableRows.push(currentFinalRow);
   });
 
   rowsContentPercentage.forEach((finalRowPercentage) => {
-    const currentFinalRowPercentage = generateSimpleRow(finalRowPercentage);
+    const currentFinalRowPercentage = generateTableRow(finalRowPercentage);
     tableRows.push(currentFinalRowPercentage);
   });
 

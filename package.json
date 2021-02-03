@@ -4,7 +4,8 @@
   "description": "Backend with the purpose to generate autmatically .docx files about SSPM report.",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon src/app.js",
+    "start:dev": "nodemon app.js",
+    "start:prod": "node app.js",
     "test": "jest --watch",
     "documentation": "jsdoc -c .jsdoc.json --verbose"
   },
