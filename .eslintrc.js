@@ -3,6 +3,7 @@ module.exports = {
     browser: true,
     commonjs: true,
     es2021: true,
+    jest: true,
   },
   extends: [
     'airbnb-base',
@@ -21,5 +22,4 @@ module.exports = {
     'jest/valid-expect': 'error',
   },
   plugins: ['jest'],
-  extends: ['plugin:jest/recommended']
 };

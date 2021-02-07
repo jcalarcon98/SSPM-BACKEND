@@ -86,11 +86,10 @@ function getShortDenominationStage(stage) {
 /**
  * Generate the main row of the table.
  * @param  {string} stage - The current stage (Mitad de ciclo || Final de ciclo).
- * @param  {number} columnSpan - The number of the columns that the cell inside row will be expanded.
+ * @param  {number} columnSpan - The number of the columns that cell inside row will be expanded.
  * @returns {TableRow} TableRow object, it is part of the .docx library
  */
 function generateTableHeader(stage, columnSpan) {
-
   const shortStageDenomination = getShortDenominationStage(stage);
 
   const headerTitle = `APLICACIÓN A ${shortStageDenomination} DEL PERÍODO ACADÉMICO`;
@@ -120,9 +119,12 @@ function generateTableHeader(stage, columnSpan) {
  * Generate a table row with multiple cells according childrenArray size
  * @param  {Object[]} childrenArray - The cells that will be displayes inside the row.
  * @param  {string} childrenArray[].content - The content cell.
- * @param  {number} childrenArray[].rowSpan? - The number of the rows that the cell inside row will be expanded.
- * @param  {number} childrenArray[].columnSpan? - The number of the columns that the cell inside row will be expanded.
- * @returns  {TableRow} TableRow object with the same amount cell of the childrenArray elements, it is part of the .docx library
+ * @param  {number} childrenArray[].rowSpan? - The number of the rows that the cell inside row
+ * will be expanded.
+ * @param  {number} childrenArray[].columnSpan? - The number of the columns that the cell inside
+ * row will be expanded.
+ * @returns  {TableRow} TableRow object with the same amount cell of the childrenArray elements,
+ * it is part of the .docx library
  */
 function generateTableRow(childrenArray) {
   const generatedChildren = [];
@@ -157,11 +159,12 @@ function generateTableRow(childrenArray) {
 
 /**
  * Generate a table row with multiple cell with each syllabus denomination
- * @param  {number} gradeNumber - The grade number
- * @param  {Object[]} syllabuses - The syllabuses of the grade.
- * @param  {number} syllabuses[0].denomination - The syllabus denomination.
- * @param  {number} alternativesSize - The value that ITEMS and PERCENTAGE will be expanded in column.
- * @returns {TableRow} TableRow object with cells according syllabuses size and three more aditional cell, it is part of the .docx library
+ * @param {number} gradeNumber - The grade number
+ * @param {Object[]} syllabuses - The syllabuses of the grade.
+ * @param {number} syllabuses[0].denomination - The syllabus denomination.
+ * @param {number} alternativesSize - The value that ITEMS and PERCENTAGE will be expanded in column
+ * @returns {TableRow} TableRow object with cells according syllabuses size and three more
+ * aditional cell, it is part of the .docx library
  */
 function generateSyllabusRow(gradeNumber = 0, syllabuses = [], alternativesSize = 0) {
   const syllabusHeader = [];
@@ -170,7 +173,7 @@ function generateSyllabusRow(gradeNumber = 0, syllabuses = [], alternativesSize 
 
   syllabusHeader.push({
     content: currentCicle,
-    rowSpan: 2
+    rowSpan: 2,
   });
 
   syllabuses.forEach(({ denomination }) => {
@@ -192,7 +195,14 @@ function generateSyllabusRow(gradeNumber = 0, syllabuses = [], alternativesSize 
 
   return generateTableRow(syllabusHeader);
 }
-
+/**
+ * Generate Teachers row according teacher's name in each syllabus.
+ * @param {Object[]} syllabuses - The syllabus of the grade.
+ * @param {Object} syllabuses[0].teacher - The syllabus teacher.
+ * @param {string} syllabuses[0].teacher.name - The syllabus teacher's name.
+ * @param {Object[]} alternatives - The alternatives for each indicator.
+ * @param {string} alternatives[0].description - Alternative description.
+ */
 function generateTeachersRow(syllabuses, alternatives) {
   const teacherHeader = [];
 
@@ -240,7 +250,6 @@ function generateTitleQuestionRow(parallel, syllabusesSize, alternativesSize) {
 }
 
 function prepareIndicatorsData(questions, syllabuses, alternatives, stage) {
-
   let totalItemsPercentage = 0;
   let areThereYesAlternative = false;
 
@@ -292,11 +301,10 @@ function prepareIndicatorsData(questions, syllabuses, alternatives, stage) {
     });
 
     counterAlternatives.forEach((counterAlternative) => {
-    
-      const { counter, description } = counterAlternative;
+      const { counter, description: currentDescription } = counterAlternative;
       const percentageIndicator = (counter * 100) / syllabuses.length;
 
-      if (description.toUpperCase() === "SI") {
+      if (currentDescription.toUpperCase() === 'SI') {
         areThereYesAlternative = true;
         totalItemsPercentage += percentageIndicator;
       }
@@ -314,7 +322,7 @@ function prepareIndicatorsData(questions, syllabuses, alternatives, stage) {
     currentRow = [];
   });
 
-  if(areThereYesAlternative){
+  if (areThereYesAlternative) {
     totalItemsPercentage /= questions.length;
     verticalPercentage = totalItemsPercentage;
   }
@@ -338,8 +346,7 @@ function generateSimpleRow(row) {
 }
 
 function prepareFinalRows(stage, syllabuses, alternatives, questionsSize) {
-  
-  const defaultAlternatives = ["SI", "NO", "EN PARTE"];
+  const defaultAlternatives = ['SI', 'NO', 'EN PARTE'];
   let areTheDefaultAlternatives = true;
 
   const sheetNumber = getShortDenominationStage(stage) === 'MITAD' ? 0 : 1;
@@ -350,8 +357,7 @@ function prepareFinalRows(stage, syllabuses, alternatives, questionsSize) {
     const currentSyllabuses = [];
 
     alternatives.forEach(({ description, persistenceId }) => {
-
-      if(!defaultAlternatives.includes(description.toUpperCase())){
+      if (!defaultAlternatives.includes(description.toUpperCase())) {
         areTheDefaultAlternatives = false;
       }
 
@@ -390,55 +396,54 @@ function prepareFinalRows(stage, syllabuses, alternatives, questionsSize) {
   let totalPercentage = 0;
 
   alternatives.forEach(({ description }, index) => {
-    currentRowContent.push({content: description});
-    currentRowContentPercentage.push({content:description});
+    currentRowContent.push({ content: description });
+    currentRowContentPercentage.push({ content: description });
 
     syllabusesRateCounter.forEach((currentSyllabus) => {
       const currentCounter = currentSyllabus[index].counter;
       const currentPercentage = (currentCounter * 100) / questionsSize;
       const counterPercentage = currentPercentage.toFixed(2);
-      
-      currentRowContent.push({content: currentCounter.toString()});
-      currentRowContentPercentage.push({content: `${counterPercentage}%`});
-      
-      if(description.toUpperCase() === 'SI'){
+      currentRowContent.push({ content: currentCounter.toString() });
+      currentRowContentPercentage.push({ content: `${counterPercentage}%` });
+
+      if (description.toUpperCase() === 'SI') {
         totalPercentage += currentPercentage;
       }
     });
 
-    if(areTheDefaultAlternatives){
-      if(description.toUpperCase() === 'SI'){
+    if (areTheDefaultAlternatives) {
+      if (description.toUpperCase() === 'SI') {
         totalPercentage /= syllabusesRateCounter.length;
 
         currentRowContent.push({
           content: 'TOTAL ITEMS',
           rowSpan: 3,
-          columnSpan: 3
+          columnSpan: 3,
         });
 
         currentRowContent.push({
-          content: verticalPercentage,
-          columnSpan: 3
+          content: `${verticalPercentage.toFixed(2)}%`,
+          columnSpan: 3,
         });
-        
+
         currentRowContentPercentage.push({
           content: 'PORCENTAJE TOTAL',
           rowSpan: 3,
-          columnSpan: 3
+          columnSpan: 3,
         });
-        
+
         currentRowContentPercentage.push({
-          content: totalPercentage,
+          content: `${totalPercentage.toFixed(2)}%`,
           rowSpan: 3,
-          columnSpan: 3
-        });  
+          columnSpan: 3,
+        });
       }
 
-      if(description.toUpperCase() === 'NO'){
+      if (description.toUpperCase() === 'NO') {
         currentRowContent.push({
           content: 'TOTAL CUMPLIMIENTO',
           rowSpan: 2,
-          columnSpan: 3
+          columnSpan: 3,
         });
       }
     }
@@ -472,7 +477,7 @@ function generateTable(syllabuses, parallel, number, alternatives, stage, questi
   tableRows.push(tableHeader, syllabusRow, teachersRow, titleQuestionRow);
 
   const { allRows } = prepareIndicatorsData(questions, syllabuses, alternatives, stage);
-  
+
   allRows.forEach((indicatorRow) => {
     const currentIndicatorRow = generateSimpleRow(indicatorRow);
     tableRows.push(currentIndicatorRow);
@@ -482,10 +487,6 @@ function generateTable(syllabuses, parallel, number, alternatives, stage, questi
     rowsContent,
     rowsContentPercentage,
   } = prepareFinalRows(stage, syllabuses, alternatives, questionsSize);
-
-  console.log(rowsContent, 'Rows content');
-  console.log(rowsContentPercentage, 'Rows content percentage')
-
 
   rowsContent.forEach((finalRow) => {
     const currentFinalRow = generateTableRow(finalRow);
@@ -538,7 +539,6 @@ async function generateDocument({ period }) {
   const document = new Document();
 
   for (const grade of grades) {
-    
     const {
       syllabuses,
       parallel,
@@ -620,5 +620,5 @@ module.exports = {
   getShortDenominationStage,
   generateTableHeader,
   generateTableRow,
-  generateSyllabusRow
+  generateSyllabusRow,
 };
