@@ -10,6 +10,7 @@ const {
   generateSimpleRow,
   prepareFinalRows,
   getRandomDocumentName,
+  capitalizeFirstLetter,
 } = require('../../../components/report/reportUtils');
 
 describe('Tests inside reportUtils.js file', () => {
@@ -610,6 +611,24 @@ describe('Tests inside reportUtils.js file', () => {
       const { documentName } = getRandomDocumentName(degree, currentStage, initDate);
 
       expect(documentName.includes('.docx')).toBe(true);
+    });
+  });
+
+  describe('Cases inside capitalizeFirstLetter', () => {
+    test('When all word capitalize is passed, return the same word only with the first letter capitalized', () => {
+      const capitalizeWord = 'FINAL';
+
+      const onlyFirstLetterCapitalized = capitalizeFirstLetter(capitalizeWord);
+
+      expect(onlyFirstLetterCapitalized).toBe('Final');
+    });
+
+    test('When all word is lowercase, return the same word only with the first letter capitalized', () => {
+      const capitalizeWord = 'final';
+
+      const onlyFirstLetterCapitalized = capitalizeFirstLetter(capitalizeWord);
+
+      expect(onlyFirstLetterCapitalized).toBe('Final');
     });
   });
 });

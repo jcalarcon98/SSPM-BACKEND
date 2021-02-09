@@ -591,9 +591,14 @@ function getRandomDocumentName(degree, stage, initDate) {
  * @param {string} word.
  */
 function capitalizeFirstLetter(word) {
-  return word.toLowerCase().charAt(0).toUpperCase() + word.slice(1);
+  return word.charAt(0).toUpperCase() + word.toLowerCase().slice(1);
 }
 
+/**
+ * Generate .docx document.
+ * @param {data} All data.
+ * @param {Object} data.period all data related to the current period.
+ */
 async function generateDocument({ period }) {
   const {
     degree,
@@ -718,4 +723,5 @@ module.exports = {
   generateSimpleRow,
   prepareFinalRows,
   getRandomDocumentName,
+  capitalizeFirstLetter,
 };
