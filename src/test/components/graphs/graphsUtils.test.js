@@ -1,4 +1,3 @@
-const util = require('util');
 const {
   prepareSyllabusGraphData,
   transformIndicatorWords,
@@ -75,8 +74,6 @@ describe('Tests inside graphUtils.js file', () => {
         alternatives,
         questionsSize,
       );
-
-      console.log(util.inspect(preparedSyllabusData, false, null, true));
 
       const { labels } = preparedSyllabusData;
 

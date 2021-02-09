@@ -6,7 +6,6 @@
 const docx = require('docx');
 const fs = require('fs');
 const process = require('process');
-const util = require('util');
 const { generateSyllabusGraph, generateIndicatorsGraph } = require('../graphs/graphsUtils');
 
 const {
@@ -640,8 +639,6 @@ async function generateDocument({ period }) {
     const currentStage = getShortDenominationStage(stage);
     const capitalizeCurrentStage = capitalizeFirstLetter(currentStage);
     const titleSyllabusGraph = `Resumen de cumplimiento por Asignatura a ${capitalizeCurrentStage} de periodo`;
-
-    console.log(util.inspect(syllabusesRateCounter, false, null, true /* enable colors */))
 
     const pathSyllabusGraph = await generateSyllabusGraph(
       titleSyllabusGraph,
