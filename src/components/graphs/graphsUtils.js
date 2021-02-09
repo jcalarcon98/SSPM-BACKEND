@@ -1,5 +1,18 @@
+/**
+ * @file Manage all the configuration nedded to generate statistics graphs
+ * to insert inside .docx file
+ * @author Jean Carlos Alarcón <jeancalarcon98@gmail.com>
+ * @author Edgar Andrés Soto <edgar.soto@unl.edu.ec>
+ */
 const QuickChart = require('quickchart-js');
 
+/**
+ * Prepare data to manage inside generateSyllabusGraph method.
+ * @param {Object[]} syllabuses - Current syllabuses for this stage.
+ * @param {Object[]} alternatives - Current alternatives for this stage.
+ * @param {string} alternatives[].description - description for current alternative.
+ * @param  {number} questionsSize - The amount of indicators to evaluate.
+ */
 function prepareSyllabusGraphData(syllabuses, alternatives, questionsSize) {
   const labels = [];
   const datasets = [];
@@ -205,4 +218,5 @@ async function generateIndicatorsGraph(titleGraph, grade, indicatorsData, altern
 module.exports = {
   generateSyllabusGraph,
   generateIndicatorsGraph,
+  prepareSyllabusGraphData,
 };
