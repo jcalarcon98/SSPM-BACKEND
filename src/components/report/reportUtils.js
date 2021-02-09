@@ -161,7 +161,7 @@ function generateTableRow(childrenArray) {
  * Generate a table row with multiple cell with each syllabus denomination
  * @param {number} gradeNumber - The grade number
  * @param {Object[]} syllabuses - The syllabuses of the grade.
- * @param {number} syllabuses[0].denomination - The syllabus denomination.
+ * @param {number} syllabuses[].denomination - The syllabus denomination.
  * @param {number} alternativesSize - The value that ITEMS and PERCENTAGE will be expanded in column
  * @returns {TableRow} TableRow object with cells according syllabuses size and three more
  * aditional cell, it is part of the .docx library
@@ -198,12 +198,12 @@ function generateSyllabusRow(gradeNumber = 0, syllabuses = [], alternativesSize 
 /**
  * Generate Teachers row according teacher's name in each syllabus.
  * @param {Object[]} syllabuses - The syllabus of the grade.
- * @param {Object} syllabuses[0].teacher - The syllabus teacher.
- * @param {string} syllabuses[0].teacher.name - The syllabus teacher's name.
+ * @param {Object} syllabuses[].teacher - The syllabus teacher.
+ * @param {string} syllabuses[].teacher.name - The syllabus teacher's name.
  * @param {Object[]} alternatives - The alternatives for each indicator.
- * @param {string} alternatives[0].description - Alternative description.
+ * @param {string} alternatives[].description - Alternative description.
  */
-function generateTeachersRow(syllabuses, alternatives) {
+function generateTeachersRow(syllabuses = [], alternatives = []) {
   const teacherHeader = [];
 
   syllabuses.forEach(({ teacher }) => {
@@ -222,8 +222,15 @@ function generateTeachersRow(syllabuses, alternatives) {
 
   return generateTableRow(teacherHeader);
 }
-
-function generateTitleQuestionRow(parallel, syllabusesSize, alternativesSize) {
+/**
+ * Generate title question row according current grade.
+ * @param  {string} parallel - The current grade parallel
+ * @param  {number} syllabusesSize - The amount of syllabus in current grade, used for
+ * expanded correctly.
+ * @param  {number} alternativesSize - The amount of alternatives, used for
+ * generate corrcetly with empty cells.
+ */
+function generateTitleQuestionRow(parallel = '', syllabusesSize, alternativesSize) {
   const indicatorsTitle = 'INDICADORES';
   const currentParallel = `PARALELO ${parallel}`;
 
@@ -248,7 +255,25 @@ function generateTitleQuestionRow(parallel, syllabusesSize, alternativesSize) {
 
   return generateTableRow(contentArray);
 }
-
+/**
+ * Prepare all data concerned to the indicators only to generate each row.
+ * It's important to indicate that each indicator is called question.
+ * @param {Object[]} questions - Current indicators for this Stage.
+ * @param {number} questions[].persistenceId - Id for each Indicator.
+ * @param {string} questions[].description - Description of each indicator.
+ * @param {Object[]} syllabuses - Current alternatives for this stage.
+ * @param {Object[]} syllabuses[].sheets - Rated sheets for each Syllabus.
+ * @param {Object[]} syllabuses[].sheets[].answers - Answers of the current Sheet.
+ * @param {string} syllabuses[].sheets[].answers.question - question id for the current answer,
+ * this Id must be exist inside <b>questions</b> array..
+ * @param {string} syllabuses[].sheets[].answers.alternative - alternative id for the current answer
+ * this Id must be exist inside <b>alternatives</b> array.
+ * @param {Object[]} alternatives - Current alternatives for this stage.
+ * @param {string} alternatives[].persistenceId - Id for each alternative.
+ * @param {string} alternatives[].description - Description for each alternative.
+ * @param {string} stage - MITAD DE CICLO || FINAL DE CICLO, this parameter is required to capture
+ * the current sheet that needs to be tabulated.
+ */
 function prepareIndicatorsData(questions, syllabuses, alternatives, stage) {
   let totalItemsPercentage = 0;
   let areThereYesAlternative = false;
@@ -621,4 +646,7 @@ module.exports = {
   generateTableHeader,
   generateTableRow,
   generateSyllabusRow,
+  generateTeachersRow,
+  generateTitleQuestionRow,
+  prepareIndicatorsData,
 };
