@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Home - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+    <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+    <label for="nav-trigger" class="navicon-button x">
+        <div class="navicon"></div>
+    </label>
+
+    <label for="nav-trigger" class="overlay"></label>
+
+    <nav>
+        <li class="nav-link nav-home-link"><a href="index.html">Home</a></li>
+        <li class="nav-heading"><a href="global.html">Globals</a></li>
+        <li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a
+                    href="global.html#capitalizeFirstLetter">capitalizeFirstLetter</a></span></li>
+        <li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a
+                    href="global.html#generateDocument">generateDocument</a></span></li>
+        <li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a
+                    href="global.html#generateIndicatorsGraph">generateIndicatorsGraph</a></span></li>
+        <li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a
+                    href="global.html#generateSimpleRow">generateSimpleRow</a></span></li>
+        <li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a
+                    href="global.html#generateSyllabusGraph">generateSyllabusGraph</a></span></li>
+        <li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a
+                    href="global.html#generateSyllabusRow">generateSyllabusRow</a></span></li>
+        <li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a
+                    href="global.html#generateTable">generateTable</a></span></li>
+        <li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a
+                    href="global.html#generateTableHeader">generateTableHeader</a></span></li>
+        <li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a
+                    href="global.html#generateTableRow">generateTableRow</a></span></li>
+        <li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a
+                    href="global.html#generateTeachersRow">generateTeachersRow</a></span></li>
+        <li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a
+                    href="global.html#generateTitle">generateTitle</a></span></li>
+        <li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a
+                    href="global.html#generateTitleQuestionRow">generateTitleQuestionRow</a></span></li>
+        <li class="nav-item"><span class="nav-item-type type-functio
+            n">F</span><span class="nav-item-name"><a
+                    href="global.html#getGradeNameByNumber">getGradeNameByNumber</a></span></li>
+        <li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a
+                    href="global.html#getRandomDocumentName">getRandomDocumentName</a></span></li>
+        <li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a
+                    href="global.html#getShortDenominationStage">getShortDenominationStage</a></span></li>
+        <li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a
+                    href="global.html#prepareFinalRows">prepareFinalRows</a></span></li>
+        <li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a
+                    href="global.html#prepareIndicatorsData">prepareIndicatorsData</a></span></li>
+        <li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a
+                    href="global.html#prepareIndicatorsGraphData">prepareIndicatorsGraphData</a></span></li>
+        <li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a
+                    href="global.html#prepareSyllabusGraphData">prepareSyllabusGraphData</a></span></li>
+        <li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a
+                    href="global.html#transformIndicatorWords">transformIndicatorWords</a></span></li>
+    </nav>
+
+    <div id="main">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        <section>
+            <img src="https://unl.edu.ec/sites/default/files/inline-images/logogris.png" alt="UNL">
+            
+            <h1 class="page-title">Seguimiento al sílabo y Plan de mejoras</h1>
+    
+            <p>
+                The purpose of BACKEND-SSPM is generate .docx file with the tabulate information of the degree entered.
+            </p>
+
+            <h4>Students on this project:</h4>
+
+            <div style="display:flex;">
+                <div style="margin-right:10px">
+                    |<a href="https://github.com/jcalarcon98"><img style="border-radius:50%" src="https://avatars1.githubusercontent.com/u/56373098?s=96&v=4" width="100px;" alt="JCAO"/><br /><sub><b>Jean Carlos Alarcón O.</b></sub></a>
+                </div>
+
+                <div>
+                    |<a href="https://github.com/EdansRocks"><img style="border-radius:50%" src="https://avatars3.githubusercontent.com/u/41339889?s=460&v=4" width="100px;" alt="EASR"/><br /><sub><b>Edgar Andrés Soto R.</b></sub></a>
+                </div>
+            </div>
+            
+            <h1 class="page-title">Documented files:</h1>
+
+            <header>
+
+                <h2>
+                    components/graphs/graphsUtils.js
+                </h2>
+
+            </header>
+
+            <article>
+                <div class="container-overview">
+
+
+                    <div class="description">Manage all the configuration nedded to generate statistics graphs
+                        to insert inside .docx file</div>
+
+
+
+
+
+                    <dl class="details">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        <dt class="tag-author">Author:</dt>
+                        <dd class="tag-author">
+                            <ul>
+                                <li><a href="mailto:jeancalarcon98@gmail.com">Jean Carlos Alarcón</a></li>
+
+                                <li><a href="mailto:edgar.soto@unl.edu.ec">Edgar Andrés Soto</a></li>
+                            </ul>
+                        </dd>
+
+
+
+
+
+
+
+
+
+                        <dt class="tag-source">Source:</dt>
+                        <dd class="tag-source">
+                            <ul class="dummy">
+                                <li>
+                                    <a href="graphs_graphsUtils.js.html">graphs/graphsUtils.js</a>, <a
+                                        href="graphs_graphsUtils.js.html#line1">line 1</a>
+                                </li>
+                            </ul>
+                        </dd>
+
+
+
+
+
+
+
+                    </dl>
+
+
+
+
+                </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </article>
+
+        </section>
+
+
+
+
+
+
+
+        <section>
+
+            <header>
+
+                <h2>
+                    components/report/reportUtils.js
+                </h2>
+
+
+            </header>
+
+            <article>
+                <div class="container-overview">
+
+
+                    <div class="description">Manage all the configuration nedded to generate .docx file</div>
+
+
+
+
+
+                    <dl class="details">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        <dt class="tag-author">Author:</dt>
+                        <dd class="tag-author">
+                            <ul>
+                                <li><a href="mailto:jeancalarcon98@gmail.com">Jean Carlos Alarcón</a></li>
+
+                                <li><a href="mailto:edgar.soto@unl.edu.ec">Edgar Andrés Soto</a></li>
+                            </ul>
+                        </dd>
+
+
+
+
+
+
+
+
+
+                        <dt class="tag-source">Source:</dt>
+                        <dd class="tag-source">
+                            <ul class="dummy">
+                                <li>
+                                    <a href="report_reportUtils.js.html">report/reportUtils.js</a>, <a
+                                        href="report_reportUtils.js.html#line1">line 1</a>
+                                </li>
+                            </ul>
+                        </dd>
+
+
+
+
+
+
+
+                    </dl>
+
+
+
+
+                </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </article>
+
+        </section>
+
+
+
+
+    </div>
+
+    <br class="clear">
+
+    <footer>
+        SSPM documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.6</a>.
+    </footer>
+
+    <script>prettyPrint();</script>
+    <script src="scripts/linenumber.js"></script>
+</body>
+
+</html>
