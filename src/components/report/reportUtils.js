@@ -586,8 +586,12 @@ function getRandomDocumentName(degree, stage, initDate) {
   };
 }
 
-function capitalizeFirstLetter(string) {
-  return string.charAt(0).toUpperCase() + string.slice(1);
+/**
+ * Returns the same word with first letter capitalize.
+ * @param {string} word.
+ */
+function capitalizeFirstLetter(word) {
+  return word.toLowerCase().charAt(0).toUpperCase() + word.slice(1);
 }
 
 async function generateDocument({ period }) {
@@ -604,7 +608,7 @@ async function generateDocument({ period }) {
 
   const document = new Document();
 
-  for (const grade of grades) {
+  for (const [index, grade] of grades.entries()) {
     const {
       syllabuses,
       parallel,
@@ -668,6 +672,13 @@ async function generateDocument({ period }) {
       alignment: AlignmentType.CENTER,
     });
 
+    children.push(
+      paragraph,
+      tableGrade,
+      syllabusGraphParagraph,
+      indicatorsGraphParagraph,
+    );
+
     /**
      * Insert Page Break.
      */
@@ -675,13 +686,9 @@ async function generateDocument({ period }) {
       children: [new PageBreak()],
     });
 
-    children.push(
-      paragraph,
-      tableGrade,
-      syllabusGraphParagraph,
-      indicatorsGraphParagraph,
-      pageBreak,
-    );
+    if (index !== grades.length - 1) {
+      children.push(pageBreak);
+    }
   }
 
   const pathInformation = getRandomDocumentName(degree, stage, initDate);
