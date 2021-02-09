@@ -1,4 +1,5 @@
 /node_modules
 *.docx
-*.png
+myChart.png
+myIndicatorsChart.png
 /docs
