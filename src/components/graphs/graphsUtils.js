@@ -49,7 +49,14 @@ function prepareSyllabusGraphData(syllabuses, alternatives, questionsSize) {
     datasets,
   };
 }
-
+/**
+ * Generate .png image with statistic graph according data passed.
+ * @param  {string} titleGraph - The title of the graph
+ * @param  {string} grade - The current grade that the graph will be generated.
+ * @param  {Object[]} syllabuses - Current grade syllabuses.
+ * @param  {Object[]} alternatives - Current stage alternatives.
+ * @param  {number} questionsSize - The amount of indicators to evaluate.
+ */
 async function generateSyllabusGraph(
   titleGraph,
   grade,
@@ -110,6 +117,10 @@ async function generateSyllabusGraph(
   return 'myChart.png';
 }
 
+/**
+ * Returns a splited word if word passed is big.
+ * @param {string} word - word to split.
+ */
 function transformIndicatorWords(word) {
   const arrayWord = word.split(' ');
   const rows = [];
@@ -132,6 +143,11 @@ function transformIndicatorWords(word) {
   return rows;
 }
 
+/**
+ * Prepare data to manage inside generateIndicatorsGraph method.
+ * @param  {Object[]} indicatorsData - information according indicators data.
+ * @param  {Object[]} alternatives - Current stage alternatives.
+ */
 function prepareIndicatorsGraphData(indicatorsData, alternatives) {
   const labels = [];
   const datasets = [];
@@ -163,7 +179,12 @@ function prepareIndicatorsGraphData(indicatorsData, alternatives) {
     datasets,
   };
 }
-
+/**
+ * @param  {string} titleGraph - The title of the graph
+ * @param  {string} grade - The current grade that the graph will be generated.
+ * @param  {Object[]} indicatorsData - information according indicators data.
+ * @param  {Object[]} alternatives - Current stage alternatives.
+ */
 async function generateIndicatorsGraph(titleGraph, grade, indicatorsData, alternatives) {
   const { labels, datasets } = prepareIndicatorsGraphData(indicatorsData, alternatives);
 
@@ -219,4 +240,5 @@ module.exports = {
   generateSyllabusGraph,
   generateIndicatorsGraph,
   prepareSyllabusGraphData,
+  transformIndicatorWords,
 };

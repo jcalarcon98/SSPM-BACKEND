@@ -1,6 +1,7 @@
 const util = require('util');
 const {
   prepareSyllabusGraphData,
+  transformIndicatorWords,
 } = require('../../../components/graphs/graphsUtils.js');
 
 describe('Tests inside graphUtils.js file', () => {
@@ -181,5 +182,22 @@ describe('Tests inside graphUtils.js file', () => {
 
       expect(data[1]).toBeCloseTo(currentValue, 5);
     });
+  });
+
+  describe('Cases inside transformIndicatorWords', () => {
+    const indicator = `¿Los objetivos explicitados en el sílabo de
+    la asignatura se cumplieron en su totalidad?`;
+
+    const splittedIndicator = transformIndicatorWords(indicator);
+
+    const expectedValue = [
+      '¿Los objetivos explicitados en',
+      'el sílabo de\n ',
+      '  la asignatura',
+      'se cumplieron en su',
+      'totalidad?',
+    ];
+
+    expect(splittedIndicator).toStrictEqual(expectedValue);
   });
 });
