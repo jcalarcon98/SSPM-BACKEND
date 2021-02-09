@@ -39,7 +39,7 @@ This Project was carried out by:
 
 You can see the documentation of this project in the next link: [Backend SSPM Documentation](https://jcalarcon98.github.io/SSPM-BACKEND/).
 
-
+Also, you can access to the END POINTS documentation in the next link: [END POINT Documentation](https://documenter.getpostman.com/view/10762142/TW77f2yK#3352d860-1e9b-448a-979d-ca3b8c6ec28c) 
 ## License 📘
 
 SSPM module is under terms of the [MIT License](LICENSE).
