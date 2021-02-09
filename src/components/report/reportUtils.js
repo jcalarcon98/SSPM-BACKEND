@@ -19,6 +19,7 @@ const {
   AlignmentType,
   VerticalAlign,
   TextRun,
+  PageBreak,
 } = docx;
 
 let verticalPercentage = 0;
@@ -357,7 +358,11 @@ function prepareIndicatorsData(questions, syllabuses, alternatives, stage) {
     indicatorsGraphData,
   };
 }
-
+/**
+ * Generate simple row, only with content, without columnspan or rowSpan.
+ * @param  {Object[]} row - Object of primitives values, like strings or numbers, example:
+ * ["1. Indicator 1", "Yes", "NO", "NO","2", "0", "0"];
+ */
 function generateSimpleRow(row) {
   const indicatorRow = [];
 
@@ -369,7 +374,22 @@ function generateSimpleRow(row) {
 
   return generateTableRow(indicatorRow);
 }
-
+/**
+ * @param  {string} stage - MITAD DE CICLO || FINAL DE CICLO, this parameter is required to capture
+ * the current sheet that needs to be tabulated.
+ * @param {Object[]} syllabuses - Current syllabuses for this grade.
+ * @param {string} syllabuses[].denomination - Denomination of the current syllabus.
+ * @param {Object[]} syllabuses[].sheets - Rated sheets for each Syllabus.
+ * @param {Object[]} syllabuses[].sheets[].answers - Answers of the current Sheet.
+ * @param {string} syllabuses[].sheets[].answers.question - question id for the current answer,
+ * this Id must be exist inside <b>questions</b> array..
+ * @param {string} syllabuses[].sheets[].answers.alternative - alternative id for the current answer
+ * this Id must be exist inside <b>alternatives</b> array.
+ * @param {Object[]} alternatives - Current alternatives for this stage.
+ * @param {string} alternatives[].persistenceId - Id for each alternative.
+ * @param {string} alternatives[].description - Description for each alternative.
+ * @param {number} questionsSize, the amount of indicators/questions in the current stage.
+ */
 function prepareFinalRows(stage, syllabuses, alternatives, questionsSize) {
   const defaultAlternatives = ['SI', 'NO', 'EN PARTE'];
   let areTheDefaultAlternatives = true;
@@ -399,7 +419,10 @@ function prepareFinalRows(stage, syllabuses, alternatives, questionsSize) {
     const currentSheet = sheets[sheetNumber];
 
     currentSheet.answers.forEach(({ question, alternative }) => {
-      // Verify if the question doesn't have percentage
+      /**
+       * Verify if questions is different that 'percentage', because percentage is passed
+       * only on second stage, and this does not need to be calculated for the final percentage.
+       */
       if (question !== 'percentage') {
         const currentAlternativeId = parseInt(alternative, 10);
 
@@ -481,7 +504,16 @@ function prepareFinalRows(stage, syllabuses, alternatives, questionsSize) {
 
   return { syllabusesRateCounter, rowsContent, rowsContentPercentage };
 }
-
+/**
+ * Generate Table to insert inside .docx, each table represents tabulated date for each grade.
+ * @param  {Object[]} syllabuses - Current Syllabuses for this grade.
+ * @param  {string} parallel - Current Parallel
+ * @param  {number} number - Current grade number.
+ * @param  {Object[]} alternatives - Alternatives for the current stage.
+ * @param  {string} stage - MITAD DE CICLO || FINAL DE CICLO, this parameter is required to capture
+ * the current sheet that needs to be tabulated.
+ * @param  {Object[]} questions - Current indicators for this Stage.
+ */
 function generateTable(syllabuses, parallel, number, alternatives, stage, questions) {
   const alternativesSize = alternatives.length;
   const syllabusesSize = syllabuses.length;
@@ -529,7 +561,12 @@ function generateTable(syllabuses, parallel, number, alternatives, stage, questi
 
   return table;
 }
-
+/**
+ * Generates random name for the current .docx report.
+ * @param  {string} degree - The name of the degree.
+ * @param  {string} stage - MITAD DE CICLO || FINAL DE CICLO.
+ * @param  {string} initDate - the period init date.
+ */
 function getRandomDocumentName(degree, stage, initDate) {
   const randomNumber = new Date().getMilliseconds();
   const currentStage = getShortDenominationStage(stage);
@@ -547,6 +584,10 @@ function getRandomDocumentName(degree, stage, initDate) {
     documentName,
     folder: degree,
   };
+}
+
+function capitalizeFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
 async function generateDocument({ period }) {
@@ -576,15 +617,19 @@ async function generateDocument({ period }) {
     const tableGrade = generateTable(syllabuses, parallel, number, alternatives, stage, questions);
     const currentGrade = `${gradeName} '${parallel}'`;
 
-    // Generate syllabus Graph;
+    /**
+     * Generate Syllabus Graph
+     */
     const { syllabusesRateCounter } = prepareFinalRows(
       stage,
       syllabuses,
       alternatives,
       questions.length,
     );
-    // TODO: check current stage and customize titleGraph
-    const titleSyllabusGraph = 'Resumen de cumplimiento por Asignatura a mitad de periodo';
+
+    const currentStage = getShortDenominationStage(stage);
+    const capitalizeCurrentStage = capitalizeFirstLetter(currentStage);
+    const titleSyllabusGraph = `Resumen de cumplimiento por Asignatura a ${capitalizeCurrentStage} de periodo`;
     const pathSyllabusGraph = await generateSyllabusGraph(
       titleSyllabusGraph,
       currentGrade,
@@ -599,9 +644,10 @@ async function generateDocument({ period }) {
       alignment: AlignmentType.CENTER,
     });
 
-    // Generate IndicatorsGraph
-    // TODO: check current stage and customize titleGraph
-    const titleIndicatorsGraph = 'Resumen de cumplimiento por Indicador a mitad de periodo';
+    /**
+     * Generate indicators Graph
+     */
+    const titleIndicatorsGraph = `Resumen de cumplimiento por Indicador a ${capitalizeCurrentStage} de periodo`;
     const { indicatorsGraphData } = prepareIndicatorsData(
       questions,
       syllabuses,
@@ -622,7 +668,20 @@ async function generateDocument({ period }) {
       alignment: AlignmentType.CENTER,
     });
 
-    children.push(paragraph, tableGrade, syllabusGraphParagraph, indicatorsGraphParagraph);
+    /**
+     * Insert Page Break.
+     */
+    const pageBreak = new docx.Paragraph({
+      children: [new PageBreak()],
+    });
+
+    children.push(
+      paragraph,
+      tableGrade,
+      syllabusGraphParagraph,
+      indicatorsGraphParagraph,
+      pageBreak,
+    );
   }
 
   const pathInformation = getRandomDocumentName(degree, stage, initDate);
@@ -649,4 +708,7 @@ module.exports = {
   generateTeachersRow,
   generateTitleQuestionRow,
   prepareIndicatorsData,
+  generateSimpleRow,
+  prepareFinalRows,
+  getRandomDocumentName,
 };

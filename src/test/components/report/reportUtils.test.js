@@ -7,6 +7,9 @@ const {
   generateTeachersRow,
   generateTitleQuestionRow,
   prepareIndicatorsData,
+  generateSimpleRow,
+  prepareFinalRows,
+  getRandomDocumentName,
 } = require('../../../components/report/reportUtils');
 
 describe('Tests inside reportUtils.js file', () => {
@@ -380,6 +383,233 @@ describe('Tests inside reportUtils.js file', () => {
       for (let index = 0; index < questions.length; index += 1) {
         expect(allRows[index][0]).toBe(`${index + 1}. ${questions[index].description}`);
       }
+    });
+  });
+
+  describe('Cases inside generateSimpleRow', () => {
+    test('When array with 5 elements is passed, generated table row should have the same length', () => {
+      const row = ['1. No matter', 0, 2, 2, 1];
+
+      const simpleRow = generateSimpleRow(row);
+
+      expect(simpleRow.options.children).toHaveLength(row.length);
+    });
+  });
+
+  describe('Cases inside prepareFinalRows', () => {
+    let alternatives = [
+      {
+        persistenceId: 5,
+        description: 'YES',
+        persistenceVersion: 0,
+      },
+      {
+        persistenceId: 6,
+        description: 'NO',
+        persistenceVersion: 0,
+      },
+      {
+        persistenceId: 7,
+        description: 'IN PART',
+        persistenceVersion: 0,
+      },
+    ];
+
+    const syllabuses = [
+      {
+        denomination: 'Control Automatizado Asistido por computador',
+        sheets: [
+          {
+            answers: [
+              {
+                persistenceId: 9,
+                alternative: '5',
+                persistenceVersion: 0,
+                question: '5',
+              },
+              {
+                persistenceId: 10,
+                alternative: '5',
+                persistenceVersion: 0,
+                question: '6',
+              },
+              {
+                persistenceId: 11,
+                alternative: '5',
+                persistenceVersion: 0,
+                question: '7',
+              },
+            ],
+          },
+          {
+            answers: [
+              {
+                persistenceId: 12,
+                alternative: '5',
+                persistenceVersion: 0,
+                question: '5',
+              },
+              {
+                persistenceId: 13,
+                alternative: '5',
+                persistenceVersion: 0,
+                question: '6',
+              },
+              {
+                persistenceId: 14,
+                alternative: '7',
+                persistenceVersion: 0,
+                question: '7',
+              },
+              {
+                persistenceId: 50,
+                alternative: '7',
+                persistenceVersion: 0,
+                question: 'percentage',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        denomination: 'Sistemas Expertos',
+        sheets: [
+          {
+            answers: [
+              {
+                persistenceId: 9,
+                alternative: '5',
+                persistenceVersion: 0,
+                question: '5',
+              },
+              {
+                persistenceId: 10,
+                alternative: '5',
+                persistenceVersion: 0,
+                question: '6',
+              },
+              {
+                persistenceId: 11,
+                alternative: '5',
+                persistenceVersion: 0,
+                question: '7',
+              },
+            ],
+          },
+          {
+            answers: [
+              {
+                persistenceId: 9,
+                alternative: '5',
+                persistenceVersion: 0,
+                question: '5',
+              },
+              {
+                persistenceId: 10,
+                alternative: '5',
+                persistenceVersion: 0,
+                question: '6',
+              },
+              {
+                persistenceId: 11,
+                alternative: '5',
+                persistenceVersion: 0,
+                question: '7',
+              },
+              {
+                persistenceId: 50,
+                alternative: '7',
+                persistenceVersion: 0,
+                question: 'percentage',
+              },
+            ],
+          },
+        ],
+      },
+    ];
+
+    let stage = 'Mitad de Ciclo';
+
+    const indicatorsAmount = 3;
+
+    test('When stage is MiddleCicle, rowsCounter should return the first element (YES OPTION) with amount of 3 for each cell', () => {
+      const { rowsContent: [firstAlternativeRow] } = prepareFinalRows(stage,
+        syllabuses,
+        alternatives,
+        indicatorsAmount);
+
+      expect(firstAlternativeRow).toHaveLength(syllabuses.length + 1);
+      expect(firstAlternativeRow[1].content).toBe('3');
+      expect(firstAlternativeRow[2].content).toBe('3');
+    });
+
+    test('When stage is FinalCicle, rowsCounter should return the first element (YES OPTION) with amount of 2 and 3 for second and third cell', () => {
+      stage = 'Final de ciclo';
+      const { rowsContent: [firstAlternativeRow] } = prepareFinalRows(stage,
+        syllabuses,
+        alternatives,
+        indicatorsAmount);
+
+      expect(firstAlternativeRow).toHaveLength(syllabuses.length + 1);
+      expect(firstAlternativeRow[1].content).toBe('2');
+      expect(firstAlternativeRow[2].content).toBe('3');
+    });
+
+    test('When alternatives are the default, rowsCounter should return two more cells in the first row', () => {
+      alternatives = [
+        {
+          persistenceId: 5,
+          description: 'SI',
+          persistenceVersion: 0,
+        },
+        {
+          persistenceId: 6,
+          description: 'NO',
+          persistenceVersion: 0,
+        },
+        {
+          persistenceId: 7,
+          description: 'EN PARTE',
+          persistenceVersion: 0,
+        },
+      ];
+
+      const { rowsContent: [firstAlternativeRow] } = prepareFinalRows(stage,
+        syllabuses,
+        alternatives,
+        indicatorsAmount);
+
+      const defaultAmountPerRow = 1;
+      expect(firstAlternativeRow).toHaveLength(syllabuses.length + defaultAmountPerRow + 2);
+    });
+  });
+
+  describe('Cases inside getRandomDocumentName', () => {
+    const degree = 'No matter';
+    const initDate = 'No matter';
+
+    test('When stage is MITAD DE CICLO, should return MITAD inside documentName', () => {
+      const currentStage = 'Mitad de ciclo';
+
+      const { documentName } = getRandomDocumentName(degree, currentStage, initDate);
+
+      expect(documentName.includes('MITAD')).toBe(true);
+    });
+
+    test('When stage is FINAL DE CICLO, should return FINAL inside documentName', () => {
+      const currentStage = 'final de ciclo';
+
+      const { documentName } = getRandomDocumentName(degree, currentStage, initDate);
+
+      expect(documentName.includes('FINAL')).toBe(true);
+    });
+
+    test('DocumentName should return .docx inside', () => {
+      const currentStage = 'final de ciclo';
+
+      const { documentName } = getRandomDocumentName(degree, currentStage, initDate);
+
+      expect(documentName.includes('.docx')).toBe(true);
     });
   });
 });
