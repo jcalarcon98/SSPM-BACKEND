@@ -555,8 +555,20 @@ function generateTable(syllabuses, parallel, number, alternatives, stage, questi
     tableRows.push(currentFinalRowPercentage);
   });
 
+  const amountOfColumns = syllabuses.length + (alternatives.length * 2) + 1;
+
+  const columnWidth = 9639 / amountOfColumns;
+
+  const columnWidths = [];
+
+  for (let i = 0; i < amountOfColumns; i += 1) {
+    columnWidths.push(columnWidth);
+  }
+
   const table = new Table({
     rows: tableRows,
+    width: 0,
+    columnWidths, // total page width is 9638 DXA for A4 portrait
   });
 
   return table;
