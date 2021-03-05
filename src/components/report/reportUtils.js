@@ -535,6 +535,31 @@ function prepareFinalRows(stage, syllabuses, alternatives, questionsSize) {
   return { syllabusesRateCounter, rowsContent, rowsContentPercentage };
 }
 /**
+ * Generate automatically widths of each cell, this approach is compatible with all formats
+ * (Google Docs, Libre Office and Microsoft word)
+ * @param  {number} syllabusesLenght amount of syllabuses.
+ * @param  {number} alternativesLength amoount of alternatives.
+ * @returns {number[]} array with all widths values
+ */
+function generateAutomaticallyWidths(syllabusesLenght, alternativesLength) {
+  const columnWidths = [];
+  let originalWidth = 9638;
+  const widthIndicatorColumn = 2838;
+  columnWidths.push(widthIndicatorColumn);
+  originalWidth -= widthIndicatorColumn;
+
+  const attributesAmount = syllabusesLenght + (alternativesLength * 2);
+
+  const restAttributesWidth = originalWidth / attributesAmount;
+
+  for (let i = 0; i < attributesAmount; i += 1) {
+    columnWidths.push(restAttributesWidth);
+  }
+
+  return columnWidths;
+}
+
+/**
  * Generate Table to insert inside .docx, each table represents tabulated date for each grade.
  * @param  {Object[]} syllabuses - Current Syllabuses for this grade.
  * @param  {string} parallel - Current Parallel
@@ -585,24 +610,17 @@ function generateTable(syllabuses, parallel, number, alternatives, stage, questi
     tableRows.push(currentFinalRowPercentage);
   });
 
-  const amountOfColumns = syllabuses.length + (alternatives.length * 2);
-
-  const columnWidth = 6600 / amountOfColumns;
-
-  const columnWidths = [3038];
-
-  for (let i = 0; i < amountOfColumns; i += 1) {
-    columnWidths.push(columnWidth);
-  }
+  const columnWidths = generateAutomaticallyWidths(syllabuses.length, alternatives.length);
 
   const table = new Table({
     rows: tableRows,
     width: 0,
-    columnWidths, // total page width is 9638 DXA for A4 portrait
+    columnWidths,
   });
 
   return table;
 }
+
 /**
  * Generates random name for the current .docx report.
  * @param  {string} degree - The name of the degree.
