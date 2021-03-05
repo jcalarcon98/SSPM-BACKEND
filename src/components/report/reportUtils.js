@@ -131,14 +131,33 @@ function generateTableRow(childrenArray) {
   const generatedChildren = [];
 
   childrenArray.forEach((child) => {
+    const textContent = {
+      text: child.content,
+      bold: true,
+    };
+
+    if (child.size) {
+      textContent.size = child.size;
+      /**
+       * Only if size is specified  and is not specified bold style we remove default bold style.
+       * This approach only executes if the childrenArray belongs to indicators.
+       */
+      if (!child.bold) {
+        delete textContent.bold;
+      }
+    }
+
+    const currentParagraphContent = {
+      children: [new TextRun(textContent)],
+      alignment: AlignmentType.CENTER,
+    };
+
+    if (child.alignment) {
+      currentParagraphContent.alignment = child.alignment;
+    }
+
     const cellChild = [
-      new Paragraph({
-        children: [new TextRun({
-          text: child.content,
-          bold: true,
-        })],
-        alignment: AlignmentType.CENTER,
-      }),
+      new Paragraph(currentParagraphContent),
     ];
 
     const currentTableCell = new TableCell({
@@ -366,10 +385,21 @@ function prepareIndicatorsData(questions, syllabuses, alternatives, stage) {
 function generateSimpleRow(row) {
   const indicatorRow = [];
 
-  row.forEach((item) => {
-    indicatorRow.push({
+  row.forEach((item, index) => {
+    const contentObject = {
       content: item,
-    });
+      size: 18,
+    };
+
+    if (item.includes('%')) {
+      contentObject.bold = true;
+    }
+
+    if (index === 0) {
+      contentObject.alignment = AlignmentType.JUSTIFIED;
+    }
+
+    indicatorRow.push(contentObject);
   });
 
   return generateTableRow(indicatorRow);
@@ -555,11 +585,11 @@ function generateTable(syllabuses, parallel, number, alternatives, stage, questi
     tableRows.push(currentFinalRowPercentage);
   });
 
-  const amountOfColumns = syllabuses.length + (alternatives.length * 2) + 1;
+  const amountOfColumns = syllabuses.length + (alternatives.length * 2);
 
-  const columnWidth = 9639 / amountOfColumns;
+  const columnWidth = 6600 / amountOfColumns;
 
-  const columnWidths = [];
+  const columnWidths = [3038];
 
   for (let i = 0; i < amountOfColumns; i += 1) {
     columnWidths.push(columnWidth);
