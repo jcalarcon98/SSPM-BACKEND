@@ -26,7 +26,6 @@ let verticalPercentage = 0;
 /**
  * Generate grade name by entering a grade number.
  * @example <caption> Usage of <b>getGradeNameByNumber()</b></caption>
- * // returns 'Segundo'
  * getGradeNameByNumber(2);
  * @param  {number} number - Number of the grade, only numbers accepts [1..10].
  * @returns {string} The name of the grade entered.
@@ -199,6 +198,8 @@ function generateSyllabusRow(gradeNumber = 0, syllabuses = [], alternativesSize 
   syllabuses.forEach(({ denomination }) => {
     syllabusHeader.push({
       content: denomination,
+      size: 16,
+      bold: true,
     });
   });
 
@@ -206,10 +207,14 @@ function generateSyllabusRow(gradeNumber = 0, syllabuses = [], alternativesSize 
     {
       content: 'ITEMS',
       columnSpan: alternativesSize,
+      size: 16,
+      bold: true,
     },
     {
       content: 'PORCENTAJE',
       columnSpan: alternativesSize,
+      size: 16,
+      bold: true,
     },
   );
 
@@ -229,6 +234,8 @@ function generateTeachersRow(syllabuses = [], alternatives = []) {
   syllabuses.forEach(({ teacher }) => {
     teacherHeader.push({
       content: teacher.name,
+      size: 16,
+      bold: true,
     });
   });
 
@@ -236,6 +243,8 @@ function generateTeachersRow(syllabuses = [], alternatives = []) {
     alternatives.forEach(({ description }) => {
       teacherHeader.push({
         content: description,
+        size: 16,
+        bold: true,
       });
     });
   }
@@ -299,6 +308,12 @@ function prepareIndicatorsData(questions, syllabuses, alternatives, stage) {
   let areThereYesAlternative = false;
 
   const sheetNumber = getShortDenominationStage(stage) === 'MITAD' ? 0 : 1;
+  let amountOfStudents = 0;
+
+  syllabuses.forEach(({ sheets }) => {
+    const currentSheets = sheets[sheetNumber];
+    amountOfStudents += currentSheets.length;
+  });
 
   const allRows = [];
   let currentRow = [];
@@ -307,11 +322,14 @@ function prepareIndicatorsData(questions, syllabuses, alternatives, stage) {
   let currentIndicatorGraphData = [];
 
   const counterAlternatives = [];
+  const alternativesPerSyllabus = [];
 
   alternatives.forEach((alternative) => {
     delete alternative.persistenceVersion;
     alternative.counter = 0;
     counterAlternatives.push(alternative);
+    const alternativePerSyllabus = { ...alternative };
+    alternativesPerSyllabus.push(alternativePerSyllabus);
   });
 
   questions.forEach(({ persistenceId, description }, index) => {
@@ -321,24 +339,32 @@ function prepareIndicatorsData(questions, syllabuses, alternatives, stage) {
     currentIndicatorGraphData.push(currentIndicator);
 
     syllabuses.forEach(({ sheets }) => {
-      const currentSheet = sheets[sheetNumber];
-      // TODO: Here we can refactor code to break for if persistenceId === question
-      currentSheet.answers.forEach(({ question, alternative }) => {
-        if (question !== 'percentage') {
-          const questionId = parseInt(question, 10);
-
-          if (persistenceId === questionId) {
-            counterAlternatives.forEach((counterAlternative) => {
-              const alternativeId = parseInt(alternative, 10);
-
-              if (counterAlternative.persistenceId === alternativeId) {
-                currentRow.push(counterAlternative.description);
-                counterAlternative.counter += 1;
-              }
-            });
+      const currentSheets = sheets[sheetNumber];
+      currentSheets.forEach((currentSheet) => {
+        currentSheet.answers.forEach(({ question, alternative }) => {
+          if (question !== 'percentage') {
+            const questionId = parseInt(question, 10);
+            if (persistenceId === questionId) {
+              counterAlternatives.forEach((counterAlternative, alternativeIndex) => {
+                const alternativeId = parseInt(alternative, 10);
+                if (counterAlternative.persistenceId === alternativeId) {
+                  counterAlternative.counter += 1;
+                  alternativesPerSyllabus[alternativeIndex].counter += 1;
+                }
+              });
+            }
           }
-        }
+        });
       });
+
+      let value = '';
+
+      alternativesPerSyllabus.forEach((currentAlternative, currentIndex) => {
+        const separator = currentIndex !== alternativesPerSyllabus.length - 1 ? '-' : '';
+        value += `${currentAlternative.counter} ${separator} `;
+        currentAlternative.counter = 0;
+      });
+      currentRow.push(value);
     });
 
     counterAlternatives.forEach(({ counter }) => {
@@ -347,7 +373,7 @@ function prepareIndicatorsData(questions, syllabuses, alternatives, stage) {
 
     counterAlternatives.forEach((counterAlternative) => {
       const { counter, description: currentDescription } = counterAlternative;
-      const percentageIndicator = (counter * 100) / syllabuses.length;
+      const percentageIndicator = (counter * 100) / amountOfStudents;
 
       if (currentDescription.toUpperCase() === 'SI') {
         areThereYesAlternative = true;
@@ -425,6 +451,7 @@ function prepareFinalRows(stage, syllabuses, alternatives, questionsSize) {
   let areTheDefaultAlternatives = true;
 
   const sheetNumber = getShortDenominationStage(stage) === 'MITAD' ? 0 : 1;
+  let amountOfStudents = 0;
 
   const syllabusesRateCounter = [];
 
@@ -446,22 +473,25 @@ function prepareFinalRows(stage, syllabuses, alternatives, questionsSize) {
 
     syllabusesRateCounter.push(currentSyllabuses);
 
-    const currentSheet = sheets[sheetNumber];
+    const currentSheets = sheets[sheetNumber];
+    amountOfStudents = currentSheets.length;
 
-    currentSheet.answers.forEach(({ question, alternative }) => {
-      /**
-       * Verify if questions is different that 'percentage', because percentage is passed
-       * only on second stage, and this does not need to be calculated for the final percentage.
-       */
-      if (question !== 'percentage') {
-        const currentAlternativeId = parseInt(alternative, 10);
+    currentSheets.forEach((currentSheet) => {
+      currentSheet.answers.forEach(({ question, alternative }) => {
+        /**
+         * Verify if questions is different that 'percentage', because percentage is passed
+         * only on second stage, and this does not need to be calculated for the final percentage.
+         */
+        if (question !== 'percentage') {
+          const currentAlternativeId = parseInt(alternative, 10);
 
-        syllabusesRateCounter[index].forEach((currentSyllabus) => {
-          if (currentAlternativeId === currentSyllabus.alternativeId) {
-            currentSyllabus.counter += 1;
-          }
-        });
-      }
+          syllabusesRateCounter[index].forEach((currentSyllabus) => {
+            if (currentAlternativeId === currentSyllabus.alternativeId) {
+              currentSyllabus.counter += 1;
+            }
+          });
+        }
+      });
     });
   });
 
@@ -479,7 +509,7 @@ function prepareFinalRows(stage, syllabuses, alternatives, questionsSize) {
 
     syllabusesRateCounter.forEach((currentSyllabus) => {
       const currentCounter = currentSyllabus[index].counter;
-      const currentPercentage = (currentCounter * 100) / questionsSize;
+      const currentPercentage = (currentCounter * 100) / (questionsSize * amountOfStudents);
       const counterPercentage = currentPercentage.toFixed(2);
       currentRowContent.push({ content: currentCounter.toString() });
       currentRowContentPercentage.push({ content: `${counterPercentage}%` });

@@ -3,9 +3,14 @@ const { generateDocument } = require('./reportUtils');
 
 exports.generateReport = async (req, res) => {
   const data = req.body;
-  const documentPath = await generateDocument(data);
-
-  res.json(documentPath);
+  try {
+    const documentPath = await generateDocument(data);
+    res.json(documentPath);
+  } catch (exception) {
+    res.status(400).send({
+      message: 'The data sent is inconsistent',
+    });
+  }
 };
 
 exports.downloadReport = (req, res) => {
