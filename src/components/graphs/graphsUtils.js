@@ -25,8 +25,7 @@ function prepareSyllabusGraphData(syllabuses, alternatives, questionsSize) {
   });
 
   syllabuses.forEach((syllabus) => {
-    const [{ denomination }] = syllabus;
-
+    const [{ denomination, studentsAmount }] = syllabus;
     const currentDenomination = denomination.length > 20 ? denomination.split(' ') : denomination;
 
     labels.push(currentDenomination);
@@ -34,7 +33,7 @@ function prepareSyllabusGraphData(syllabuses, alternatives, questionsSize) {
     syllabus.forEach(({ counter, alternative }) => {
       datasets.forEach((currentData) => {
         if (currentData.label === alternative) {
-          const currentValue = (counter * 100) / questionsSize;
+          const currentValue = (counter * 100) / (questionsSize * studentsAmount);
 
           const dataValue = currentValue === 0 ? 0.3 : currentValue;
 

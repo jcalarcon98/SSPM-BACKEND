@@ -509,6 +509,7 @@ function prepareFinalRows(stage, syllabuses, alternatives, questionsSize) {
 
     syllabusesRateCounter.forEach((currentSyllabus) => {
       const currentCounter = currentSyllabus[index].counter;
+      currentSyllabus[index].studentsAmount = amountOfStudents;
       const currentPercentage = (currentCounter * 100) / (questionsSize * amountOfStudents);
       const counterPercentage = currentPercentage.toFixed(2);
       currentRowContent.push({ content: currentCounter.toString() });
