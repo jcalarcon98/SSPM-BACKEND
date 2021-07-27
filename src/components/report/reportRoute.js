@@ -1,7 +1,7 @@
 const express = require('express');
+const reportController = require('./reportController');
 
 const app = express();
-const reportController = require('./reportController');
 
 app.post('/', reportController.generateReport);
 

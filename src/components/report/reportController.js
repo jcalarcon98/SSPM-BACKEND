@@ -7,6 +7,7 @@ exports.generateReport = async (req, res) => {
     const documentPath = await generateDocument(data);
     res.json(documentPath);
   } catch (exception) {
+    console.log('Error exception', exception);
     res.status(400).send({
       message: 'The data sent is inconsistent',
     });

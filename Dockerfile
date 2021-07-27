@@ -8,4 +8,4 @@ RUN npm install && npm cache clean --force --loglevel=error
 
 COPY . .
 
-CMD [ "npm", "run", "start:prod"]
+CMD [ "npm", "run", "start:prod", ">" , "log.txt"]

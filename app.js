@@ -1,14 +1,12 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 
 const app = express();
 const reportRoutes = require('./src/components/report/reportRoute');
-/**
- * Global configuration
- */
+
 require('./config/config');
 
-app.use(bodyParser.json());
+app.use(express.json({ limit: '50mb', extended: true }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 app.use('/api/docx', reportRoutes);
 
